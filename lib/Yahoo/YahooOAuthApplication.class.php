@@ -283,28 +283,21 @@ class YahooOAuthApplication
 
   public function getSocialGraph($offset = 0, $limit = 10)
   {
-    $oauth_access_token = $yahoo_oauth->get_access_token($oauth_request);
-    $params = array(
-        'q' => 'select * from social.profile (0, 9999) where guid in (select guid from social.connections (0, 9999) where owner_guid=me)',
-        'format' => 'json',
-   );
+    $data = $this->yql('select * from social.profile (0, 9999) where guid in (select guid from social.connections (0, 9999) where owner_guid=me)');
 
-    $response = $yahoo_oauth->make_signed_req(YahooYQLQuery::OAUTH_API_URL, $params, $oauth_access_token, $oauth_request);
-    return $response;
+    return isset($data->query->results) ? $data->query->results : false;
   }
-
-
 
   public function getGeoPlaces($location)
   {
     $data = $this->yql(sprintf('select * from geo.places where text="%s"', $location));
 
-    return $data->query->results;
+    return isset($data->query->results) ? $data->query->results : false;
   }
 
-  public function yql($query)
+  public function yql($query, $parameters = array())
   {
-    $parameters = array('q' => $query, 'format' => 'json', 'env' => YahooYQLQuery::DATATABLES_URL);
+    $parameters = array_merge(array('q' => $query, 'format' => 'json', 'env' => YahooYQLQuery::DATATABLES_URL), $parameters);
 
     $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', YahooYQLQuery::OAUTH_API_URL, $parameters);
     $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
