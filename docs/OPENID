@@ -1,0 +1,33 @@
+<?php
+
+$openid_store    = new Auth_OpenID_FileStore(sys_get_temp_dir().'/openid2.db');
+$openid_consumer = new Auth_OpenID_Consumer($openid_store);
+
+$auth_request    = $openid_consumer->begin('https://yahoo.com');
+$auth_request->addExtension(new Auth_OpenID_OAuthRequest(OAUTH_CONSUMER_KEY));
+
+// For OpenID 1, send a redirect.  For OpenID 2, use a Javascript
+if ($auth_request->shouldSendRedirect()) {
+  header('Location: '.$auth_request->redirectURL(OAUTH_DOMAIN, OAUTH_DOMAIN)); exit;
+} else {
+  $content = $auth_request->htmlMarkup(OAUTH_DOMAIN, OAUTH_DOMAIN, false, array('id' => 'openid'));
+}
+
+$response = $consumer->complete($return_to);
+if ($response->status == Auth_OpenID_CANCEL) {
+  $msg = 'Verification cancelled.';
+} else if ($response->status == Auth_OpenID_FAILURE) {
+  $msg = "OpenID authentication failed: " . $response->message;
+} else if ($response->status == Auth_OpenID_SUCCESS) {
+  $openid = $response->getDisplayIdentifier();
+  $esc_identity = escape($openid);
+  $success = sprintf('You have successfully verified <a href="%s">%s</a> as your identity.<br><br>Here\'s your Yahoo! profile data fetched using the Yahoo! REST APIs', $esc_identity, $esc_identity);
+  if ($response->endpoint->canonicalID) {
+      $escaped_canonicalID = escape($response->endpoint->canonicalID);
+      $success .= '  (XRI CanonicalID: '.$escaped_canonicalID.') ';
+  }
+
+$oauth_resp = Auth_OpenID_OAuthResponse::fromSuccessResponse($response);
+$authorized_request_token = $oauth_resp->authorized_request_token;
+$authorized_verifier = $oauth_resp->authorized_verifier;
+}
