@@ -44,10 +44,10 @@ require_once(dirname(__FILE__).'/../common.inc.php');
  */
 
 # openid/oauth credentials
-define('OAUTH_CONSUMER_KEY', '####################');
-define('OAUTH_CONSUMER_SECRET', '####################');
-define('OAUTH_DOMAIN', '####################');
-define('OAUTH_APP_ID', '####################');
+define('OAUTH_CONSUMER_KEY', '###');
+define('OAUTH_CONSUMER_SECRET', '###');
+define('OAUTH_DOMAIN', '###');
+define('OAUTH_APP_ID', '###');
 
 $oauthapp = new YahooOAuthApplication(OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET, OAUTH_APP_ID, OAUTH_DOMAIN);
 
@@ -131,30 +131,80 @@ header('Pragma: no-cache');
 // restore access token from session
 $oauthapp->token = YahooOAuthAccessToken::from_string($_SESSION['yahoo_oauth_access_token']);
 
+// do something with user data
+if(isset($_POST['action']))
+{
+  switch($_POST['action'])
+  {
+    case 'updateStatus':
+
+      if(isset($_POST['status']) && !empty($_POST['status']))
+      {
+        $status = strip_tags($_POST['status']);
+        $oauthapp->setStatus(null, $status);
+      }
+
+    break;
+
+    case 'postUpdate':
+
+      if(isset($_POST['update']) && !empty($_POST['update']))
+      {
+        $update = strip_tags($_POST['update']);
+        $oauthapp->insertUpdate(null, $update, $update, $oauthapp->callback_url);
+      }
+
+    break;
+  }
+}
+
+// fetch latest user data
 $profile  = $oauthapp->getProfile();
 $updates  = $oauthapp->getUpdates(null, 0, 20);
 $connections = $oauthapp->getConnections(null, 0, 1000);
 
-// $oauthapp->setStatus(null, 'making yahoo! open...');
-// $oauthapp->insertUpdate(null, 'my demo app update', 'my demo app update description.......', 'http://mylink.com/');
 ?>
 
-<div id="profile" class="vcard">
-  <span class="fn n">
-		<a href="<?php echo $profile->profileUrl; ?>"  title="<?php echo $profile->nickname; ?>'s Profile" ><img src="<?php echo $profile->image->imageUrl; ?>" height="<?php echo ceil($profile->image->height / 2); ?>" width="<?php echo ceil($profile->image->width / 2); ?>" alt="<?php echo $profile->nickname; ?>'s Profile Picture"></a>
-    <span class="given-name"><?php echo $profile->givenName; ?></span>
-    <span class="family-name"><?php echo $profile->familyName; ?></span>
-  </span>
+<div id="profile" class="yui-b">
+  <div class="vcard">
+    <span class="fn n">
+  		<a href="<?php echo $profile->profileUrl; ?>"  title="<?php echo $profile->nickname; ?>'s Profile" ><img src="<?php echo $profile->image->imageUrl; ?>" height="<?php echo ceil($profile->image->height / 2); ?>" width="<?php echo ceil($profile->image->width / 2); ?>" alt="<?php echo $profile->nickname; ?>'s Profile Picture"></a>
+      <span class="given-name"><?php echo $profile->givenName; ?></span>
+      <span class="family-name"><?php echo $profile->familyName; ?></span>
+    </span>
 
-	<div class="adr">
-		<span class="locality"><?php echo $profile->location; ?></span>
-	</div>
+  	<div class="adr">
+  		<span class="locality"><?php echo $profile->location; ?></span>
+  	</div>
 
-	<em><?php echo $profile->status->message;?></em>
+  	<em><?php echo $profile->status->message;?></em>
+
+    <div>
+      <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+        <fieldset>
+          <input type="hidden" name="action" value="updateStatus">
+          <label for="identity">Update status:</label>
+          <input type="text" name="status" id="status"><input type="submit" value="update">
+        </fieldset>
+      </form>
+    </div>
+
+  </div>
 </div>
 
-<div id="updates">
+<div id="updates" class="yui-b">
   <h1><?php echo $profile->nickname; ?>'s Updates</h1>
+
+  <div>
+    <form action="<?php echo $_SERVER['PHP_SELF']; ?>" method="post">
+      <fieldset>
+        <input type="hidden" name="action" value="postUpdate">
+        <label for="identity">Post an update</label>
+        <input type="text" name="update" id="update"><input type="submit" value="add">
+      </fieldset>
+    </form>
+  </div>
+
   <?php if(!empty($updates)): ?>
   <ul>
     <?php foreach($updates as $update): ?>
@@ -166,7 +216,7 @@ $connections = $oauthapp->getConnections(null, 0, 1000);
   <?php endif; ?>
 </div>
 
-<div id="socialgraph">
+<div id="socialgraph" class="yui-b">
   <h1><?php echo $profile->nickname; ?>'s Social Graph</h1>
   <?php if(!empty($connections)): ?>
   <ul>

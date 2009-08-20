@@ -57,10 +57,13 @@ span.svy-sg span span span span span.rtext {float:left;padding:0 0 0 3px;backgro
 
 /** vcard **/
 .vcard {
-	width: 24em;
 	color: #000;
 	text-align: left;
 	font-family: "Lucida Grande", Verdana, Helvetica, Arial, sans-serif;
+}
+
+.vcard form {
+	margin-top: 1em;
 }
 
 .fn {
