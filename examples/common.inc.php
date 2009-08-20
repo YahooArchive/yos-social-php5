@@ -15,7 +15,7 @@ error_reporting(E_ALL); # | E_STRICT
 
 
 # set include path (required for openid libs)
-set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/../../lib/openid/'.PATH_SEPARATOR.dirname(__FILE__).'/../../lib/');
+set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/../lib/openid/'.PATH_SEPARATOR.dirname(__FILE__).'/../lib/');
 
 /**
  * OAuth - http://oauth.googlecode.com/svn/code/php/
