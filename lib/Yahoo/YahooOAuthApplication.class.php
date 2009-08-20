@@ -288,6 +288,18 @@ class YahooOAuthApplication
     return isset($data->query->results) ? $data->query->results : false;
   }
 
+  public function getProfileLocation($guid = null)
+  {
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+
+    $data = $this->yql(sprintf('select * from geo.places where text in (select location from social.profile where guid="%s")', $guid));
+
+    return isset($data->query->results) ? $data->query->results : false;
+  }
+
   public function getGeoPlaces($location)
   {
     $data = $this->yql(sprintf('select * from geo.places where text="%s"', $location));
@@ -297,6 +309,12 @@ class YahooOAuthApplication
 
   public function yql($query, $parameters = array())
   {
+    if(is_array($query))
+    {
+      // handle multi queries
+      $query = sprintf('select * from query.multi where queries="%s"', implode(';', str_replace('"', "'", $query)));
+    }
+
     $parameters = array_merge(array('q' => $query, 'format' => 'json', 'env' => YahooYQLQuery::DATATABLES_URL), $parameters);
 
     $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', YahooYQLQuery::OAUTH_API_URL, $parameters);
