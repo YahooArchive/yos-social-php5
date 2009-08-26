@@ -38,17 +38,6 @@
 
 require_once(dirname(__FILE__).'/../common.inc.php');
 
-
-/*
- * Make sure you obtain oauth keys before continuing by visiting: http://developer.yahoo.com/dashboard
- */
-
-# openid/oauth credentials
-define('OAUTH_CONSUMER_KEY', '###');
-define('OAUTH_CONSUMER_SECRET', '###');
-define('OAUTH_DOMAIN', '###');
-define('OAUTH_APP_ID', '###');
-
 $oauthapp = new YahooOAuthApplication(OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET, OAUTH_APP_ID, OAUTH_DOMAIN);
 
 // handle openid/oauth
@@ -98,6 +87,45 @@ if(isset($_REQUEST['openid_mode']))
     default:
   }
 }
+else
+{
+  if(isset($_SESSION['yahoo_oauth_access_token']))
+  {
+    // restore access token from session
+    $oauthapp->token = YahooOAuthAccessToken::from_string($_SESSION['yahoo_oauth_access_token']);
+
+    // do something with user data
+    if(isset($_POST['action']))
+    {
+      switch($_POST['action'])
+      {
+        case 'updateStatus':
+
+          if(isset($_POST['status']) && !empty($_POST['status']))
+          {
+            $status = strip_tags($_POST['status']);
+            $oauthapp->setStatus(null, $status);
+          }
+
+          header('Location: '.$oauthapp->callback_url); exit;
+
+        break;
+
+        case 'postUpdate':
+
+          if(isset($_POST['update']) && !empty($_POST['update']))
+          {
+            $update = strip_tags($_POST['update']);
+            $oauthapp->insertUpdate(null, $update, $update, $oauthapp->callback_url);
+          }
+
+          header('Location: '.$oauthapp->callback_url); exit;
+
+        break;
+      }
+    }
+  }
+}
 
 header('Cache-Control: Cache-Control: no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
 header('Pragma: no-cache');
@@ -127,36 +155,6 @@ header('Pragma: no-cache');
 <?php endif; ?>
 
 <?php
-
-// restore access token from session
-$oauthapp->token = YahooOAuthAccessToken::from_string($_SESSION['yahoo_oauth_access_token']);
-
-// do something with user data
-if(isset($_POST['action']))
-{
-  switch($_POST['action'])
-  {
-    case 'updateStatus':
-
-      if(isset($_POST['status']) && !empty($_POST['status']))
-      {
-        $status = strip_tags($_POST['status']);
-        $oauthapp->setStatus(null, $status);
-      }
-
-    break;
-
-    case 'postUpdate':
-
-      if(isset($_POST['update']) && !empty($_POST['update']))
-      {
-        $update = strip_tags($_POST['update']);
-        $oauthapp->insertUpdate(null, $update, $update, $oauthapp->callback_url);
-      }
-
-    break;
-  }
-}
 
 // fetch latest user data
 $profile  = $oauthapp->getProfile();

@@ -65,7 +65,8 @@ terms of a separate license. See the bundled LICENSE files for more information:
  * JSON       - http://pear.php.net/Services_JSON
 
 
-=======
+Installation
+============
 
 After downloading and unpacking the release, copy the contents of 'lib'
 to a directory that is accessible via the PHP include_path method.
@@ -74,7 +75,24 @@ to a directory that is accessible via the PHP include_path method.
 Examples
 ========
 
+The sdk comes with example code, but you must first upcate the file
+'examples/common.inc.php' with your OAuth consumer key and secret.
+
+
+    define('OAUTH_CONSUMER_KEY', '###');
+    define('OAUTH_CONSUMER_SECRET', '###');
+    define('OAUTH_DOMAIN', '###');
+    define('OAUTH_APP_ID', '###');
+
+
+Create OAuth applications in the Yahoo! Developer Dashboard:
+
+http://developer.yahoo.com/dashboard/
+
+
 ## Fetching YQL:
+
+See the bundled sample code in examples/yql/delicious.php.
 
     $yql = new YahooYQLQuery();
     $response = $yql->execute('select * from delicious.feeds.popular');
@@ -125,6 +143,11 @@ Examples
 ## Signing with SimpleAuth (OpenID + OAuth):
 
     See the bundled sample code in examples/simpleauth/simpleauth.php.
+
+
+## Fetching people and activities with OpenSocial:
+
+    See the bundled sample code in examples/opensocial/profile.php.
 
 
 Tests
