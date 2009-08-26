@@ -171,9 +171,9 @@ class OAuthSignatureMethod_RSA_SHA1 extends OAuthSignatureMethod {
 }
 
 class OAuthRequest {
-  private $parameters;
-  private $http_method;
-  private $http_url;
+  public $parameters;
+  public $http_method;
+  public $http_url;
   // for debug purposes
   public $base_string;
   public static $version = '1.0';
@@ -776,5 +776,3 @@ class OAuthUtil {
     return implode('&', $pairs);
   }
 }
-
-?>
