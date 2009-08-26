@@ -25,6 +25,7 @@ require_once "osapiPartuzaProvider.php";
 require_once "osapiNetlogProvider.php";
 require_once "osapiHi5Provider.php";
 require_once "osapiXrdsProvider.php";
+require_once "osapiYahooProvider.php";
 
 /**
  * The osapiProvider class is used to define your OAuth and OpenSocial API endpoints

@@ -23,7 +23,6 @@
  * both 2 legged and 3 legged OAuth.
  */
 
-require_once "external/OAuth.php";
 require_once "external/XrdsSimpleParser.php";
 require_once "providers/osapiProvider.php";
 require_once "storage/osapiStorage.php";
