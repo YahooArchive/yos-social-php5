@@ -77,54 +77,54 @@ Examples
 ## Fetching YQL:
 
     $yql = new YahooYQLQuery();
-	  $response = $yql->execute('select * from delicious.feeds.popular');
+    $response = $yql->execute('select * from delicious.feeds.popular');
 
-		if(isset($response->query) && isset($response->query->results))
-		{
-			var_dump($response->query->results);
-		}
-		elseif(isset($response->error))
-		{
-			print sprintf('YQL query failed with error: "%s".', $response->error->description);
-		}
-		else
-		{
-			print 'YQL response malformed.';
-		}
+    if(isset($response->query) && isset($response->query->results))
+    {
+      var_dump($response->query->results);
+    }
+    elseif(isset($response->error))
+    {
+      print sprintf('YQL query failed with error: "%s".', $response->error->description);
+    }
+    else
+    {
+      print 'YQL response malformed.';
+    }
 
 
 ## Fetching Social Data:
 
-		# Yahoo! OAuth Credentials - http://developer.yahoo.com/dashboard/
+    # Yahoo! OAuth Credentials - http://developer.yahoo.com/dashboard/
 
-		$CONSUMER_KEY      = '##';
-		$CONSUMER_SECRET   = '##';
-		$APPLICATION_ID    = '##';
-		$CALLBACK_URL      = '##';
+    $CONSUMER_KEY      = '##';
+    $CONSUMER_SECRET   = '##';
+    $APPLICATION_ID    = '##';
+    $CALLBACK_URL      = '##';
 
-		$oauthapp      = new YahooOAuthApplication($CONSUMER_KEY, $CONSUMER_SECRET, $APPLICATION_ID, $CALLBACK_URL);
+    $oauthapp      = new YahooOAuthApplication($CONSUMER_KEY, $CONSUMER_SECRET, $APPLICATION_ID, $CALLBACK_URL);
 
-		# Fetch request token
-		$request_token = $oauthapp->getRequestToken();
+    # Fetch request token
+    $request_token = $oauthapp->getRequestToken();
 
-		# Redirect user to authorization url
-		$redirect_url  = $oauthapp->getAuthorizationUrl($request_token, $CALLBACK_URL);
+    # Redirect user to authorization url
+    $redirect_url  = $oauthapp->getAuthorizationUrl($request_token, $CALLBACK_URL);
 
-		# Exchange request token for authorized access token
-		$access_token  = $oauthapp->getAccessToken($request_token);
+    # Exchange request token for authorized access token
+    $access_token  = $oauthapp->getAccessToken($request_token);
 
-		# update access token
-		$oauthapp->token = $access_token;
+    # update access token
+    $oauthapp->token = $access_token;
 
-		# fetch user profile
-		$profile = $oauthapp->getProfile();
+    # fetch user profile
+    $profile = $oauthapp->getProfile();
 
-		var_dump($profile);
+    var_dump($profile);
 
 
 ## Signing with SimpleAuth (OpenID + OAuth):
 
-		See the bundled sample code in examples/simpleauth/simpleauth.php.
+    See the bundled sample code in examples/simpleauth/simpleauth.php.
 
 
 Tests
