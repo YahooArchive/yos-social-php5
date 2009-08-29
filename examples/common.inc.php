@@ -64,7 +64,7 @@ error_reporting(E_ALL); #  | E_STRICT -- hide strict as openid lib is verbose
 ini_set('display_errors', true);
 
 # set include path (required for openid, oauth, opensocial libs)
-set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/../lib/openid/'.PATH_SEPARATOR.dirname(__FILE__).'/../lib/');
+set_include_path(get_include_path().PATH_SEPARATOR.dirname(__FILE__).'/../lib/OpenID/'.PATH_SEPARATOR.dirname(__FILE__).'/../lib/');
 
 /**
  * OAuth - http://oauth.googlecode.com/svn/code/php/
