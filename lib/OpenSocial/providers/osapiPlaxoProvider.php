@@ -53,14 +53,15 @@ class osapiPlaxoProvider extends osapiProvider {
    * @param osapiAuth $signer The signing mechanism used for this request.
    */
   private function fixRequest(osapiRequest &$request, &$method, &$url, &$headers, osapiAuth &$signer) {
-    $this->fixFetchPersonFields($request);
+    $this->fixFetchPersonById($request, $signer);
   }
 
   /**
-   * Plaxo returns an error if you try to request certain fields.
+   * Plaxo doesn't allow for fetching a user directly by ID.
+   * TODO: Implement a fix to allow requesting users directly by ID in plaxo (/@me/@all/[id])
    * @param osapiRequest $request
    */
-  private function fixFetchPersonFields(&$request) {
+  private function fixFetchPersonById(&$request, &$signer) {
   }
 
   /**

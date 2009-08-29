@@ -22,13 +22,42 @@
  * @author Chris Chabot
  */
 class osapiRestIO extends osapiIO {
-  // URL templates used to construct the REST requests
-  private static $urlTemplates = array('people' => 'people/{userId}/{groupId}/{personId}', 'activities' => 'activities/{userId}/{groupId}/{appId}/{activityId}', 'appdata' => 'appdata/{userId}/{groupId}/{appId}',
-      'messages' => 'messages/{userId}/outbox/{msgId}');
-  // Array used to resolve the method to the correct HTTP operation
-  private static $methodAliases = array('get' => 'GET', 'create' => 'PUT', 'delete' => 'DELETE', 'update' => 'POST');
-  // Array used to define which field in the params array is supposed to be the post body
-  private static $postAliases = array('activities' => 'activity', 'appdata' => 'data', 'messages' => 'message');
+  
+	// URL templates used to construct the REST requests
+	private static $urlTemplates = array(
+	  'people' => 'people/{userId}/{groupId}/{personId}',
+	  'activities' => 'activities/{userId}/{groupId}/{appId}/{activityId}',
+	  'appdata' => 'appdata/{userId}/{groupId}/{appId}',
+	  'messages' => 'messages/{userId}/outbox/{msgId}', 
+	  'albums'=>'albums/{userId}/{groupId}/{albumId}',
+	  'mediaItems'=>'mediaItems/{userId}/{groupId}/{albumId}/{mediaItemId}',
+	  'groups'=>'groups/{userId}',
+	  // MySpace Specific
+	  'statusmood'=>'statusmood/{userId}/{groupId}',
+	  'notifications'=>'notifications/{userId}/{groupId}'
+	);
+  
+	// Array used to resolve the method to the correct HTTP operation
+	private static $methodAliases = array(
+          'get' => 'GET',
+	  'create' => 'POST',
+	  'delete' => 'DELETE',
+	  'update' => 'PUT',
+	  'upload'=>'POST',
+	  'getSupportedFields'=>'GET'
+	);
+	
+	// Array used to define which field in the params array is supposed to be the post body
+	private static $postAliases = array(
+	  'people' => 'person',
+	  'activities' => 'activity', 
+	  'appdata' => 'data',
+	  'messages' => 'message', 
+	  'albums'=>'album',
+	  'mediaItems'=>'mediaItem',
+	  'statusmood'=>'statusMood',
+          'notifications'=>'notification'
+	);
 
   /**
    * Sends the batched requests to the REST endpoint, the actual sending
@@ -43,7 +72,7 @@ class osapiRestIO extends osapiIO {
     $ret = array();
     foreach ($requests as $request) {
       $entry = self::executeRestRequest($request, $provider, $signer);
-      $requestType = $request->getService($request->method);
+      
       // flip 'entry' to 'list' so the result structure processing can be the same between the RPC and REST implementations
       if (!$entry instanceof osapiError) {
         if (isset($entry['data']['entry'])) {
@@ -52,13 +81,14 @@ class osapiRestIO extends osapiIO {
         }
         if (isset($entry['data']['list']) && count($entry['data']) != 1) {
           foreach ($entry['data']['list'] as $key => $val) {
-            $entry['data']['list'][$key] = self::convertArray($requestType, $val, $strictMode);
+            $entry['data']['list'][$key] = self::convertArray($request, $val, $strictMode);
           }
           $entry['data'] = self::listToCollection($entry['data'], $strictMode);
         } else {
-          // convert the response into a type implementation if no error occured
           if (isset($entry['data']['list'])) {
-            $entry['data'] = self::convertArray($requestType, $entry['data']['list'], $strictMode);
+            $entry['data'] = self::convertArray($request, $entry['data']['list'], $strictMode);
+          }else{
+          	$entry['data'] = self::convertArray($request, $entry['data'], $strictMode);
           }
         }
       }
@@ -72,7 +102,7 @@ class osapiRestIO extends osapiIO {
     if (method_exists($provider, 'postParseResponseProcess')) {
       $provider->postParseResponseProcess($request, $ret);
     }
-
+    
     return $ret;
   }
 
@@ -100,17 +130,44 @@ class osapiRestIO extends osapiIO {
     $method = self::$methodAliases[$operation];
     $postBody = false;
     $headers = false;
-
+    $hasPostBody = false;
+    
     if ($method != 'GET') {
       if (isset(self::$postAliases[$service]) && isset($request->params[self::$postAliases[$service]])) {
-        $headers = array("Content-Type: application/json");
+      	$hasPostBody = true;
+      	$headers = array("Content-Type: application/json");
+      	
+      	if($request->method == 'mediaItems.upload'){
+          $postBody = $request->params[self::$postAliases[$service]];
+          $headers = array("Content-Type: " . $request->params['contentType'], 'Expect:');
+          unset($request->params['contentType']);
+      	}
       }
     }
-
+    
     $baseUrl = $provider->restEndpoint;
     if (substr($baseUrl, strlen($baseUrl) - 1, 1) == '/') {
       // Prevent double //'s in the url when concatinating
       $baseUrl = substr($baseUrl, 0, strlen($baseUrl) - 1);
+    }
+
+    if (method_exists($provider, 'preRequestProcess')) {
+      // Note that we're passing baseUrl, not the complete service URL.
+      // It should be easier to change service parameters by changing
+      // the params array than modifying a string url.
+      $provider->preRequestProcess($request, $method, $baseUrl, $headers, $signer);
+    }
+
+    if ($hasPostBody) {
+        if($request->method == 'mediaItems.upload') {
+            // If we are uploading a mediaItem don't try to json_encode it.
+            $postBody = $request->params[self::$postAliases[$service]];
+        }else {
+            // Pull out the (possibly) modified post body parameter and
+            // unset it from the request, so that it doesn't get signed.
+            $postBody = json_encode($request->params[self::$postAliases[$service]]);
+        }
+        unset($request->params[self::$postAliases[$service]]);
     }
 
     $url = $baseUrl . self::constructUrl($urlTemplate, $request->params);
@@ -118,25 +175,17 @@ class osapiRestIO extends osapiIO {
       // PortableContacts end points don't require the /people bit added
       $url = str_replace('/people', '', $url);
     }
-
-    if (method_exists($provider, 'preRequestProcess')) {
-      $provider->preRequestProcess($request, $method, $url, $headers, $signer);
-    }
-
-    if ($method != 'GET') {
-      if (isset(self::$postAliases[$service]) && isset($request->params[self::$postAliases[$service]])) {
-        $postBody = json_encode($request->params[self::$postAliases[$service]]);
-        unset($request->params[self::$postAliases[$service]]);
-      }
-    }
-
+    
     $signedUrl = $signer->sign($method, $url, $request->params, $postBody, $headers);
     $response = self::send($signedUrl, $method, $provider->httpProvider, $headers, $postBody);
+
     if (method_exists($provider, 'postRequestProcess')) {
       $provider->postRequestProcess($request, $response);
     }
     $ret = array();
-    if ($response['http_code'] == '200' && ! empty($response['data'])) {
+    
+    // Added 201 for create requests
+    if (($response['http_code'] == '200' || $response['http_code'] == '201')  && !empty($response['data'])) {
       $ret['data'] = json_decode($response['data'], true);
       if ($ret['data'] == $response['data']) {
         // signals a failure in decoding the json
@@ -145,7 +194,7 @@ class osapiRestIO extends osapiIO {
     } else {
       $ret = new osapiError($response['http_code'], isset($response['data']) ? $response['data'] : '');
     }
-
+    
     return $ret;
   }
 

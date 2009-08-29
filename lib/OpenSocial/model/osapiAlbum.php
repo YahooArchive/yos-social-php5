@@ -15,20 +15,21 @@
  * limitations under the License.
  */
 
-require_once "osapiHttpBasic.php";
-require_once "osapiOAuth2Legged.php";
-require_once "osapiOAuth3Legged.php";
-require_once "osapiOAuth3Legged_10a.php";
-require_once "osapiSecurityToken.php";
-require_once "osapiFCAuth.php";
-
 /**
- * Authentication class that deals with 3-Legged OAuth
- * See http://sites.google.com/site/oauthgoog/2leggedoauth/2opensocialrestapi
- * for more information on the difference between 2 or 3 leggged oauth
+ * osapiAlbum - model class for albums
+ * @author Jesse Edwards
  *
- * @author Chris Chabot
  */
-abstract class osapiAuth {
-  abstract public function sign($method, $url, $params = array(), $postBody = false, &$headers = array());
+class osapiAlbum extends osapiModel
+{
+	var $id;
+	var $thumbnailUrl;
+	var $title;
+	var $description;
+	var $location;
+	var $ownerId;
+	var $mediaType;
+	var $mediaMimeType;
+	var $mediaItemCount;
 }
+?>

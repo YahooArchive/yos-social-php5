@@ -26,8 +26,15 @@ class osapiGoogleProvider extends osapiProvider {
    * @param osapiHttpProvider httpProvider The HTTP request provider to use.
    */
   public function __construct(osapiHttpProvider $httpProvider = null) {
-    parent::__construct(null, null, null, 'http://www-opensocial-sandbox.googleusercontent.com/api/', 'http://www-opensocial-sandbox.googleusercontent.com/api/rpc', "Google", true, $httpProvider);
+    parent::__construct('https://www.google.com/accounts/OAuthGetRequestToken', 'https://www.google.com/accounts/OAuthAuthorizeToken', 'https://www.google.com/accounts/OAuthGetAccessToken', 'http://www-opensocial-sandbox.googleusercontent.com/api/', 'http://www-opensocial-sandbox.googleusercontent.com/api/rpc', "Google", true, $httpProvider);
   }
+  
+  /**
+   * Parameters to include in the OAuth request token call (some containers 
+   * need a scope parameter).
+   * @var array
+   */
+  public $oauthRequestTokenParams = array('scope' => 'http://www-opensocial-sandbox.googleusercontent.com/api/ http://www-opensocial-sandbox.googleusercontent.com/api/rpc');
 
   /**
    * Set's the signer's useBodyHash to true

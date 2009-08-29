@@ -15,7 +15,6 @@
  * limitations under the License.
  */
 
-
 /**
  * Meta file that includes all the OpenSocial model definitions.
  * The model files them selves have been adopted from the php
@@ -23,7 +22,9 @@
  * are also licenced under the Apache License, version 2.0
  *
  * @author Chris Chabot
+ * @author Jesse Edwards
  */
+
 require_once "osapiCollection.php";
 require_once "osapiComplexField.php";
 require_once "osapiListField.php";
@@ -35,7 +36,6 @@ require_once "osapiBodyType.php";
 require_once "osapiEmail.php";
 require_once "osapiIdSpec.php";
 require_once "osapiIm.php";
-require_once "osapiMediaItem.php";
 require_once "osapiMessage.php";
 require_once "osapiName.php";
 require_once "osapiOrganization.php";
@@ -44,3 +44,38 @@ require_once "osapiPhone.php";
 require_once "osapiPhoto.php";
 require_once "osapiUrl.php";
 require_once "osapiError.php";
+
+require_once "osapiAlbum.php";
+require_once "osapiMediaItem.php";
+require_once "osapiStatusMoodModel.php";
+require_once "osapiNotification.php";
+
+//require_once "osapiGroup.php";
+
+//require_once "osapiTemplateParams.php";
+//require_once "osapiAppDataModel.php";
+
+class osapiModel
+{
+	/**
+	 * Standardized method for getting fields from osapiModels
+	 * @param string $field
+	 * @return mixed
+	 */
+	public function getField($field)
+	{
+		return !!$this->{$field} ? $this->{$field} : null;	
+	}
+	
+	/**
+	 * Standardized method for setting fields for osapiModels
+	 * @param string $field
+	 * @param mixed $value
+	 * @return none
+	 */
+	public function setField($field, $value)
+	{
+		$this->{$field} = $value;
+	}
+}
+

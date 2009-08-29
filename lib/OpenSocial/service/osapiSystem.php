@@ -31,26 +31,28 @@ class osapiSystem extends osapiService {
    *
    * @return osapiRequest
    */
+    
   public function listMethods() {
     return osapiRequest::createRequest('system.listMethods', array());
   }
 
-  public function get($params = array()) {
+  public function get($params) {
     throw new osapiException("osapiCache only supports the invalidate method");
   }
 
-  public function update($params = array())
+  public function update($params)
   {
     throw new osapiException("osapiCache only supports the invalidate method");
   }
 
-  public function delete($params = array())
+  public function delete($params)
   {
     throw new osapiException("osapiCache only supports the invalidate method");
   }
 
-  public function create($params = array())
+  public function create($params)
   {
     throw new osapiException("osapiCache only supports the invalidate method");
   }
+  
 }

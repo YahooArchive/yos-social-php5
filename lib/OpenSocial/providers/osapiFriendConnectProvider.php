@@ -22,6 +22,12 @@
 class osapiFriendConnectProvider extends osapiProvider {
 
   public function __construct(osapiHttpProvider $httpProvider = null) {
-    parent::__construct(null, null, null, "http://www.google.com/friendconnect/api", null, "FriendConnect", true, $httpProvider);
+    parent::__construct(null, null, null, "http://www.google.com/friendconnect/api", "http://www.google.com/friendconnect/api/rpc", "FriendConnect", true, $httpProvider);
+  }
+
+  public function preRequestProcess(&$request, &$method, &$url, &$headers, osapiAuth &$signer) {
+    if (method_exists($signer, 'setUseBodyHash')) {
+      $signer->setUseBodyHash(true);
+    }
   }
 }

@@ -18,20 +18,24 @@
 require_once "osapiOAuth2Legged.php";
 
 /**
- * Authentication class that deals with 3-Legged OAuth
+ * Authentication class that deals with 3-Legged OAuth 1.0a
  * See http://sites.google.com/site/oauthgoog/2leggedoauth/2opensocialrestapi
  * for more information on the difference between 2 or 3 leggged oauth.
  *
+ * This class uses the new and improved OAuth 1.0a spec which has a slightly
+ * different work flow in how callback urls, request & access tokens are dealt with
+ * to prevent a possible man in the middle attack
+ *
  * @author Chris Chabot
  */
-class osapiOAuth3Legged extends osapiOAuth2Legged {
+class osapiOAuth3Legged_10a extends osapiOAuth2Legged {
   protected $userId;
   protected $consumerToken;
   protected $accessToken;
   protected $provider;
   private $localUserId;
   private $storage;
-  private $storageKey;
+  public $storageKey;
 
   /**
    * Instantiates the class, but does not initiate the login flow, leaving it
@@ -77,16 +81,20 @@ class osapiOAuth3Legged extends osapiOAuth2Legged {
     if (($token = $storage->get($auth->storageKey)) !== false) {
       $auth->accessToken = $token;
     } else {
-      if (isset($_GET['oauth_continue'])) {
-        $token = $auth->upgradeRequestToken($_GET['token'], $_GET['key']);
+      if (isset($_GET['oauth_verifier']) && isset($_GET['oauth_token'])  && isset($_GET['uid'])) {
+        $uid = $_GET['uid'];
+        $secret = $auth->storage->get($auth->storageKey.":nonce" . $uid);
+        $auth->storage->delete($auth->storageKey.":nonce" . $uid);
+        $token = $auth->upgradeRequestToken($_GET['oauth_token'], $secret, $_GET['oauth_verifier']);
         $auth->redirectToOriginal();
       } else {
         // Initialize the OAuth dance, first request a request token, then kick the client to the authorize URL
         // First we store the current URL in our storage, so that when the oauth dance is completed we can return there
         $callbackUrl = 'http://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
-        $token = $auth->obtainRequestToken($callbackUrl);
-        $callbackUrl .= (strpos($_SERVER['REQUEST_URI'], '?') !== false ? '&' : '?') . 'oauth_continue=1&token=' . $token->key . '&key=' . urldecode($token->secret);
-        $auth->redirectToAuthorization($token, $callbackUrl);
+        $uid = uniqid();
+        $token = $auth->obtainRequestToken($callbackUrl, $uid);
+        $auth->storage->set($auth->storageKey.":nonce" . $uid,  $token->secret);
+        $auth->redirectToAuthorization($token);
       }
     }
 
@@ -98,9 +106,10 @@ class osapiOAuth3Legged extends osapiOAuth2Legged {
    *
    * @param osapiStorage $storage storage class to use (file,apc,memcache,mysql)
    * @param osapiProvider $provider the provider configuration (required to get the oauth endpoints)
+   * @param oauthVerifier
    */
-  public function upgradeRequestToken($requestToken, $requestTokenSecret) {
-    $ret = $this->requestAccessToken($requestToken, $requestTokenSecret);
+  public function upgradeRequestToken($requestToken, $requestTokenSecret, $oauthVerifier) {
+    $ret = $this->requestAccessToken($requestToken, $requestTokenSecret, $oauthVerifier);
     if ($ret['http_code'] == '200') {
       $matches = array();
       @parse_str($ret['data'], $matches);
@@ -124,9 +133,9 @@ class osapiOAuth3Legged extends osapiOAuth2Legged {
    * @param osapiProvider $provider the provider configuration (required to get the oauth endpoints)
    * @return array('http_code' => HTTP response code (200, 404, 401, etc), 'data' => the html document)
    */
-  protected function requestAccessToken($requestToken, $requestTokenSecret) {
+  protected function requestAccessToken($requestToken, $requestTokenSecret, $oauthVerifier) {
     $accessToken = new OAuthConsumer($requestToken, $requestTokenSecret);
-    $accessRequest = OAuthRequest::from_consumer_and_token($this->consumerToken, $accessToken, "GET", $this->provider->accessTokenUrl, array());
+    $accessRequest = OAuthRequest::from_consumer_and_token($this->consumerToken, $accessToken, "GET", $this->provider->accessTokenUrl, array('oauth_verifier' => $oauthVerifier));
     $accessRequest->sign_request($this->signatureMethod, $this->consumerToken, $accessToken);
     return osapiIO::send($accessRequest, 'GET', $this->provider->httpProvider);
   }
@@ -152,9 +161,10 @@ class osapiOAuth3Legged extends osapiOAuth2Legged {
    * @param osapiStorage $storage storage class to use (file,apc,memcache,mysql)
    * @param osapiProvider $provider the provider configuration (required to get the oauth endpoints)
    */
-  public function obtainRequestToken($callbackUrl) {
+  public function obtainRequestToken($callbackUrl, $uid) {
     $this->storage->set($this->storageKey.":originalUrl", $callbackUrl);
-    $ret = $this->requestRequestToken();
+    $callbackParams = (strpos($_SERVER['REQUEST_URI'], '?') !== false ? '&' : '?') . 'uid=' . urlencode($uid);
+    $ret = $this->requestRequestToken($callbackUrl . $callbackParams);
     if ($ret['http_code'] == '200') {
       $matches = array();
       preg_match('/oauth_token=(.*)&oauth_token_secret=(.*)/', $ret['data'], $matches);
@@ -173,14 +183,14 @@ class osapiOAuth3Legged extends osapiOAuth2Legged {
    * @param osapiProvider $provider the provider configuration (required to get the oauth endpoints)
    * @return array('http_code' => HTTP response code (200, 404, 401, etc), 'data' => the html document)
    */
-  protected function requestRequestToken() {
-    $requestParams = (isset($this->provider->oauthRequestTokenParams)) ? $this->provider->oauthRequestTokenParams : array();
-    $requestTokenRequest = OAuthRequest::from_consumer_and_token($this->consumerToken, NULL, "GET", $this->provider->requestTokenUrl, $requestParams);
+  protected function requestRequestToken($callbackUrl) {
+    $requestTokenRequest = OAuthRequest::from_consumer_and_token($this->consumerToken, NULL, "GET", $this->provider->requestTokenUrl, array());
     if(is_array($this->provider->requestTokenParams)){
       foreach($this->provider->requestTokenParams as $key => $value) {
         $requestTokenRequest->set_parameter($key, $value);
       }
     }
+    $requestTokenRequest->set_parameter('oauth_callback', $callbackUrl);
     $requestTokenRequest->sign_request($this->signatureMethod, $this->consumerToken, NULL);
     return osapiIO::send($requestTokenRequest, 'GET', $this->provider->httpProvider);
   }
@@ -192,8 +202,8 @@ class osapiOAuth3Legged extends osapiOAuth2Legged {
    * @param OAuthToken $token the request token
    * @param string $callbackUrl the URL to return to post-authorization (passed to login site)
    */
-  public function redirectToAuthorization($token, $callbackUrl) {
-    $authorizeRedirect = $this->provider->authorizeUrl . "?oauth_token={$token->key}&oauth_callback=" . urlencode($callbackUrl);
+  public function redirectToAuthorization($token) {
+    $authorizeRedirect = $this->provider->authorizeUrl . "?oauth_token={$token->key}";
     header("Location: $authorizeRedirect");
   }
 }

@@ -21,6 +21,11 @@ require_once "osapiMessages.php";
 require_once "osapiPeople.php";
 require_once "osapiSystem.php";
 
+require_once "osapiAlbums.php";
+require_once "osapiMediaItems.php";
+require_once "osapiStatusMood.php";
+require_once "osapiNotifications.php";
+
 /**
  * Abstract base class for the service definitions
  *
@@ -81,6 +86,9 @@ abstract class osapiService {
     }
     return $object;
   }
+ 
+  // Will add this once I check in other Updates.
+  //abstract public function getSupportedFields();
 
   abstract public function get($params);
 

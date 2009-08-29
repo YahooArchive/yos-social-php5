@@ -29,21 +29,33 @@ require_once "osapiHttpProvider.php";
 abstract class osapiIO {
   const USER_AGENT = 'osapi 1.0';
 
-  protected static function convertArray($type, $val, $strictMode) {
-    $converted = false;
-    switch ($type) {
-      case 'people':
-        $converted = osapiPeople::convertArray($val, $strictMode);
-        break;
-      case 'activities':
-        $converted = osapiActivities::convertArray($val, $strictMode);
-        break;
-      case 'appdata':
-        $converted = osapiAppData::convertArray($val, $strictMode);
-        break;
-      case 'messages':
-        $converted = osapiMessages::convertArray($val, $strictMode);
-        break;
+protected static function convertArray(osapiRequest $request, $val, $strictMode) {
+    $converted = null;
+    $service = $request->getService($request->method);
+    $method = substr($request->method,stripos($request->method,'.')+1);
+    
+    // don't converArray on responses that do not need to be placed into their respective models. (supportedFields, delete, create, update)
+    if($method == 'get'){
+        switch ($service) {
+          case 'people':
+            $converted = osapiPeople::convertArray($val, $strictMode);
+            break;
+          case 'activities':
+            $converted = osapiActivities::convertArray($val, $strictMode);
+            break;
+          case 'appdata':
+            $converted = osapiAppData::convertArray($val, $strictMode);
+            break;
+          case 'messages':
+            $converted = osapiMessages::convertArray($val, $strictMode);
+            break;
+          case 'mediaItems':
+            $converted = osapiMediaItems::convertArray($val, $strictMode);
+            break;
+          case 'albums':
+            $converted = osapiAlbums::convertArray($val, $strictMode);
+            break;
+        }
     }
     return $converted ? $converted : $val;
   }

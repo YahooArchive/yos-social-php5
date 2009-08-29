@@ -29,6 +29,7 @@ class osapiOAuth2Legged extends osapiAuth {
   protected $accessToken;
   protected $userId;
   protected $useBodyHash;
+  protected $useBodyHack;
 
   public function __construct($consumerKey, $consumerSecret, $userId = null) {
     $this->userId = $userId;
@@ -36,6 +37,7 @@ class osapiOAuth2Legged extends osapiAuth {
     $this->consumerToken = new OAuthConsumer($consumerKey, $consumerSecret, null);
     $this->accessToken = null;
     $this->useBodyHash = false;
+    $this->useBodyHack = false;
   }
 
   /**
@@ -44,6 +46,16 @@ class osapiOAuth2Legged extends osapiAuth {
    */
   public function setUseBodyHash($value) {
     $this->useBodyHash = $value;
+  }
+
+  /**
+   * Set whether to use the body hack (include the post body as a signed OAuth
+   * parameter.
+   *
+   * @param bool $value True if the body hack method should be used.
+   */
+  public function setUseBodyHack($value) {
+    $this->useBodyHack = $value;
   }
 
   /**
@@ -82,15 +94,14 @@ class osapiOAuth2Legged extends osapiAuth {
       if ($this->useBodyHash) {
         $bodyHash = base64_encode(sha1($postBody, true));
         $oauthRequest->set_parameter("oauth_body_hash", $bodyHash);
-      } else {
+      }
+      if ($this->useBodyHack) {
         $oauthRequest->set_parameter($postBody, '');
       }
     }
     $oauthRequest->sign_request($this->signatureMethod, $this->consumerToken, $this->accessToken);
-    if ($postBody) {
-      if (!$this->useBodyHash) {
-        unset($oauthRequest->parameters[$postBody]);
-      }
+    if ($postBody && $this->useBodyHack) {
+      unset($oauthRequest->parameters[$postBody]);
     }
     $signedUrl = $oauthRequest->to_url();
     return $signedUrl;
@@ -104,9 +115,10 @@ class osapiOAuth2Legged extends osapiAuth {
    * @return array the combined parameters
    */
   protected function mergeParameters($params) {
-    $defaults = array('oauth_nonce' => md5(microtime() . mt_rand()),
-        'oauth_version' => OAuthRequest::$version, 'oauth_timestamp' => time(),
-        'oauth_consumer_key' => $this->consumerToken->key);
+    $defaults = array(
+      'oauth_nonce' => md5(microtime() . mt_rand()),
+      'oauth_version' => OAuthRequest::$version, 'oauth_timestamp' => time(),
+      'oauth_consumer_key' => $this->consumerToken->key);
     
     if ($this->userId != null) {
       $defaults['xoauth_requestor_id'] = $this->userId;

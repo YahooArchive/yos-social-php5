@@ -85,14 +85,14 @@ class osapiRpcIO extends osapiIO {
               if (isset($entry['id'])) {
                 // map back to the original request so we can determine the expected type
                 foreach ($entry['data']['list'] as $key => $val) {
-                  $entry['data']['list'][$key] = self::convertArray($requestType, $val, $strictMode);
+                  $entry['data']['list'][$key] = self::convertArray($request, $val, $strictMode);
                 }
               }
               $entry['data'] = self::listToCollection($entry['data'], $strictMode);
             } else {
               // convert the response into a type implementation if no error occured
               if (isset($entry['data'])) {
-                $entry['data'] = self::convertArray($requestType, $entry['data'], $strictMode);
+                $entry['data'] = self::convertArray($request, $entry['data'], $strictMode);
               }
             }
           }
