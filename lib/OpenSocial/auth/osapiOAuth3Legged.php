@@ -43,12 +43,15 @@ class osapiOAuth3Legged extends osapiOAuth2Legged {
    * @param osapiProvider $provider the provider configuration (required to get the oauth endpoints)
    * @param any $localUser the *local* user ID (this is not the user's ID on the social network site, but the user id on YOUR site, this is used to link the oauth access token to a local login)
    * @param any $userId the *remote* user ID, you can supply this user id if known but it's completely optional. If set it will be included in the oauth requests in the xoauth_requestor_id field)
+   * @param string $accessToken (optional)
+   * @param string $accessTokenSecret (optional)
    */
-  public function __construct($consumerKey, $consumerSecret, osapiStorage $storage, osapiProvider $provider, $localUserId = null, $userId = null) {
+  public function __construct($consumerKey, $consumerSecret, osapiStorage $storage, osapiProvider $provider, $localUserId = null, $userId = null, $accessToken = null, $accessTokenSecret = null) {
     $this->provider = $provider;
     $this->localUserId = $localUserId;
     $this->userId = $userId;
     $this->consumerToken = new OAuthConsumer($consumerKey, $consumerSecret, NULL);
+    $this->accessToken = new OAuthConsumer($accessToken, $accessTokenSecret);
     $this->signatureMethod = new OAuthSignatureMethod_HMAC_SHA1();
     $this->storage = $storage;
     $this->storageKey = 'OAuth:' . $consumerKey . ':' . $userId . ':' . $localUserId; // Scope data to the local user as well, or else multiple local users will share the same OAuth credentials.
