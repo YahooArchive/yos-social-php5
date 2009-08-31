@@ -55,10 +55,27 @@ $provider    = new osapiYahooProvider();
 // create file system storage using system temp directory
 $storage     = new osapiFileStorage(sys_get_temp_dir());
 
-// get valid oauth credentials
-//$oauth = osapiOAuth3Legged::performOAuthLogin(OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET, $storage, $provider, $session_id);
+// if this is a YAP application, the access token and secret
+// will be provided.
+if(isset($_POST['yap_viewer_access_token']) &&
+   isset($_POST['yap_viewer_access_token_secret']) &&
+   isset($_POST['yap_viewer_guid'])) {
 
-$oauth = new osapiOAuth2Legged(OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET, $session_id);
+  $oauth = new osapiOAuth3Legged(
+      OAUTH_CONSUMER_KEY,
+      OAUTH_CONSUMER_SECRET,
+      $storage,
+      $provider,
+      $_POST['yap_viewer_guid'],
+      $_POST['yap_viewer_guid'],
+      $_POST['yap_viewer_access_token'],
+      $_POST['yap_viewer_access_token_secret']
+  );
+}
+else {
+  $oauth = osapiOAuth3Legged::performOAuthLogin(OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET, $storage, $provider, $session_id);
+}
+
 
 // create open social instance from yahoo provider + oauth credentials
 $opensocial = new osapi($provider, $oauth);
@@ -71,10 +88,10 @@ $friend_count = 10;
 $batch = $opensocial->newBatch();
 
 // Fetch the user profile
-$batch->add($opensocial->people->get(array('userId' => '@me', 'groupId' => '@self', 'fields' => array())), 'self');
+$batch->add($opensocial->people->get(array('userId' => '@me', 'groupId' => '@self', 'fields' => array('displayName'))), 'self');
 
 // Fetch the friends of the user
-$batch->add($opensocial->people->get(array('userId' => '@me', 'groupId' => '@friends', 'fields' => array(), 'count' => 100)), 'friends');
+$batch->add($opensocial->people->get(array('userId' => '@me', 'groupId' => '@friends', 'fields' => array('id'), 'count' => 100)), 'friends');
 
 // Request the activities of the current user
 $batch->add($opensocial->activities->get(array('userId' => '@me', 'groupId' => '@self', 'count' => 100)), 'userActivities');
