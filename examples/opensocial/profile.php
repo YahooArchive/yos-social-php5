@@ -76,10 +76,8 @@ else {
   $oauth = osapiOAuth3Legged::performOAuthLogin(OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET, $storage, $provider, $session_id);
 }
 
-
 // create open social instance from yahoo provider + oauth credentials
 $opensocial = new osapi($provider, $oauth);
-$opensocial->setStrictMode(true);
 
 // The number of friends to fetch.
 $friend_count = 10;

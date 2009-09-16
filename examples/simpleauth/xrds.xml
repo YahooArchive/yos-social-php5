@@ -6,7 +6,7 @@
 		<!-- OpenID Consumer Service -->
 		<Service priority="10">
 			<Type>http://specs.openid.net/auth/2.0/return_to</Type>
-			<URI>http://imaginingtheweb.com/</URI>
+			<URI>http://yourdomain.com/</URI>
 		</Service>
 	</XRD>
 </xrds:XRDS>

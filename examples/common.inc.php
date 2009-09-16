@@ -121,3 +121,5 @@ require_once 'OpenSocial/osapi.php';
  */
 require_once 'Yahoo/YahooOAuthApplication.class.php';
 
+header('Cache-Control: no-cache, must-revalidate');
+header('Pragma: no-cache');
