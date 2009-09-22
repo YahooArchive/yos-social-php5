@@ -283,7 +283,7 @@ class YahooOAuthApplication
 
   public function getSocialGraph($offset = 0, $limit = 10)
   {
-    $data = $this->yql('select * from social.profile (0, 9999) where guid in (select guid from social.connections (0, 9999) where owner_guid=me)');
+    $data = $this->yql('select * from social.profile ('.$offset.', '.$limit.') where guid in (select guid from social.connections ('.$offset.', '.$limit.') where owner_guid=me)');
 
     return isset($data->query->results) ? $data->query->results : false;
   }
