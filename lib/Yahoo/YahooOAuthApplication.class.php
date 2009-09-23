@@ -100,21 +100,32 @@ class YahooOAuthApplication
   }
 
   # oauth standard apis
-  public function getRequestToken()
+  public function getRequestToken($callback = "oob")
   {
     # $this->options['lang']
-    $parameters = array('xoauth_lang_pref' => 'en');
+    $parameters = array('xoauth_lang_pref' => 'en', 'oauth_callback' => $callback);
     $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, null, 'GET', YahooOAuthClient::REQUEST_TOKEN_API_URL, $parameters);
     $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, null);
     return $this->client->fetch_request_token($oauth_request);
   }
 
-  public function getAuthorizationUrl($oauth_request_token, $callback = null)
+  public function getAuthorizationUrl($oauth_request_token)
   {
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $oauth_request_token, 'GET', YahooOAuthClient::AUTHORIZATION_API_URL, array('oauth_callback' => $callback));
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $oauth_request_token);
-
-    return $oauth_request->to_url();
+    // $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $oauth_request_token, 'GET', YahooOAuthClient::AUTHORIZATION_API_URL);
+    // $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $oauth_request_token);
+    
+    // return $oauth_request->to_url();
+    
+    if($oauth_request_token->request_auth_url) 
+    {
+       $auth_url = $oauth_request_token->request_auth_url;
+    }
+    else 
+    {
+       $auth_url = sprintf("%s?oauth_token=%s", YahooOAuthClient::AUTHORIZATION_API_URL, $oauth_request_token->key);
+    }
+   
+    return $auth_url;
   }
 
   public function getAccessToken($oauth_request_token, $verifier = null)
@@ -128,6 +139,11 @@ class YahooOAuthApplication
       $parameters = array('oauth_verifier' => $verifier);
     }
 
+    if($oauth_request_token->session_handle) 
+    {
+       $parameters["oauth_session_handle"] = $oauth_request_token->session_handle;
+    }
+    
     $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $oauth_request_token, 'GET', YahooOAuthClient::ACCESS_TOKEN_API_URL, $parameters);
     $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $oauth_request_token);
     $this->token = $this->client->fetch_access_token($oauth_request);
