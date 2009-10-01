@@ -99,10 +99,8 @@ class YahooOAuthApplication
 
   }
 
-  # oauth standard apis
   public function getRequestToken($callback = "oob")
   {
-    # $this->options['lang']
     $parameters = array('xoauth_lang_pref' => 'en', 'oauth_callback' => $callback);
     $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, null, 'GET', YahooOAuthClient::REQUEST_TOKEN_API_URL, $parameters);
     $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, null);
@@ -113,18 +111,17 @@ class YahooOAuthApplication
   {
     // $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $oauth_request_token, 'GET', YahooOAuthClient::AUTHORIZATION_API_URL);
     // $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $oauth_request_token);
-    
     // return $oauth_request->to_url();
-    
-    if($oauth_request_token->request_auth_url) 
+
+    if(isset($oauth_request_token->request_auth_url) && !empty($oauth_request_token->request_auth_url))
     {
        $auth_url = $oauth_request_token->request_auth_url;
     }
-    else 
+    else
     {
        $auth_url = sprintf("%s?oauth_token=%s", YahooOAuthClient::AUTHORIZATION_API_URL, $oauth_request_token->key);
     }
-   
+
     return $auth_url;
   }
 
@@ -139,11 +136,11 @@ class YahooOAuthApplication
       $parameters = array('oauth_verifier' => $verifier);
     }
 
-    if($oauth_request_token->session_handle) 
+    if(isset($oauth_request_token->session_handle) && !empty($oauth_request_token->session_handle))
     {
        $parameters["oauth_session_handle"] = $oauth_request_token->session_handle;
     }
-    
+
     $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $oauth_request_token, 'GET', YahooOAuthClient::ACCESS_TOKEN_API_URL, $parameters);
     $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $oauth_request_token);
     $this->token = $this->client->fetch_access_token($oauth_request);
@@ -159,6 +156,29 @@ class YahooOAuthApplication
     $this->token = $this->client->fetch_access_token($oauth_request);
 
     return $this->token;
+  }
+
+  public static function fromYAP($consumer_key, $consumer_secret, $application_id)
+  {
+    $is_canvas = isset($_POST['yap_appid']) && isset($_POST['yap_view']) && isset($_POST['yap_signature']);
+    if($is_canvas === false) {
+       throw new YahooOAuthApplicationException('YAP application environment not found in request.');
+    }
+
+    $yap_consumer_key = $_POST['yap_consumer_key'];
+    if($consumer_key != $yap_consumer_key) {
+       throw new YahooOAuthApplicationException(sprintf('Provided consumer key does not match yap_consumer_key: (%s)', $yap_consumer));
+    }
+
+    $consumer    = new OAuthConsumer($consumer_key, $consumer_secret);
+    $application = new YahooOAuthApplication($consumer->key, $consumer->secret, $application_id, null, new YahooOAuthAccessToken($_POST['yap_viewer_access_token'], $_POST['yap_viewer_access_token_secret'], null, null, null, $_POST['yap_viewer_guid']));
+
+    $signature_valid = $application->signature_method_hmac_sha1->check_signature(OAuthRequest::from_request(), $consumer, null, $_POST['oauth_signature']);
+    if($signature_valid === false) {
+       return false;
+    }
+
+    return $application;
   }
 
   public function getProfile($guid = null)
