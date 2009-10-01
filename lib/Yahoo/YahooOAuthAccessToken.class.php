@@ -54,9 +54,10 @@ class YahooOAuthAccessToken extends OAuthToken
          $expires_in               = null,
          $session_handle           = null,
          $authorization_expires_in = null,
-         $yahoo_guid               = null;
+         $yahoo_guid               = null,
+         $oauth_problem            = null;
 
-  public function __construct($key, $secret, $expires_in=null, $session_handle=null, $authorization_expires_in=null, $yahoo_guid=null)
+  public function __construct($key, $secret, $expires_in=null, $session_handle=null, $authorization_expires_in=null, $yahoo_guid=null, $oauth_problem=null)
   {
     $this->key                      = $key;
     $this->secret                   = $secret;
@@ -64,6 +65,7 @@ class YahooOAuthAccessToken extends OAuthToken
     $this->session_handle           = $session_handle;
     $this->authorization_expires_in = $authorization_expires_in;
     $this->yahoo_guid               = $yahoo_guid;
+    $this->oauth_problem            = $oauth_problem;
   }
 
   public function to_string()
@@ -73,7 +75,8 @@ class YahooOAuthAccessToken extends OAuthToken
                            'oauth_expires_in' => $this->expires_in,
                            'oauth_session_handle' => $this->session_handle,
                            'oauth_authorization_expires_in' => $this->authorization_expires_in,
-                           'xoauth_yahoo_guid' => $this->yahoo_guid
+                           'xoauth_yahoo_guid' => $this->yahoo_guid,
+                           'oauth_problem' => $this->oauth_problem
                            ));
   }
 
@@ -90,8 +93,9 @@ class YahooOAuthAccessToken extends OAuthToken
     $session_handle           = isset($params['oauth_session_handle']) ? $params['oauth_session_handle'] : null;
     $authorization_expires_in = isset($params['oauth_authorization_expires_in']) ? $params['oauth_authorization_expires_in'] : null;
     $yahoo_guid               = isset($params['xoauth_yahoo_guid']) ? $params['xoauth_yahoo_guid'] : null;
+    $oauth_problem            = isset($params['oauth_problem']) ? $params['oauth_problem'] : null;
 
-    return new self($key, $secret, $expires_in, $session_handle, $authorization_expires_in, $yahoo_guid);
+    return new self($key, $secret, $expires_in, $session_handle, $authorization_expires_in, $yahoo_guid, $oauth_problem);
   }
 
 }

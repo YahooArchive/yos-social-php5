@@ -49,14 +49,16 @@ class YahooOAuthRequestToken extends OAuthToken
   public $key                      = null,
          $secret                   = null,
          $expires_in               = null,
-         $request_auth_url         = null;
+         $request_auth_url         = null,
+         $oauth_problem            = null;
 
-  public function __construct($key, $secret, $expires_in=null, $request_auth_url=null)
+  public function __construct($key, $secret, $expires_in=null, $request_auth_url=null, $oauth_problem=null)
   {
     $this->key              = $key;
     $this->secret           = $secret;
     $this->expires_in       = $expires_in;
     $this->request_auth_url = $request_auth_url;
+    $this->oauth_problem    = $oauth_problem;
   }
 
   public function to_string()
@@ -64,7 +66,8 @@ class YahooOAuthRequestToken extends OAuthToken
     return http_build_query(array('oauth_token' => $this->key,
                                   'oauth_token_secret' => $this->secret,
                                   'oauth_expires_in' => $this->expires_in,
-                                  'xoauth_request_auth_url' => $this->request_auth_url
+                                  'xoauth_request_auth_url' => $this->request_auth_url,
+                                  'oauth_problem' => $this->oauth_problem
                              ));
   }
 
@@ -79,7 +82,8 @@ class YahooOAuthRequestToken extends OAuthToken
     $secret           = isset($params['oauth_token_secret']) ? $params['oauth_token_secret'] : null;
     $expires_in       = isset($params['oauth_expires_in']) ? $params['oauth_expires_in'] : null;
     $request_auth_url = isset($params['xoauth_request_auth_url']) ? $params['xoauth_request_auth_url'] : null;
+    $oauth_problem    = isset($params['oauth_problem']) ? $params['oauth_problem'] : null;
 
-    return new self($key, $secret, $expires_in, $request_auth_url);
+    return new self($key, $secret, $expires_in, $request_auth_url, $oauth_problem);
   }
 }
