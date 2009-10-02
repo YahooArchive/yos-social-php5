@@ -167,7 +167,7 @@ class YahooOAuthApplication
 
     $yap_consumer_key = $_POST['yap_consumer_key'];
     if($consumer_key != $yap_consumer_key) {
-       throw new YahooOAuthApplicationException(sprintf('Provided consumer key does not match yap_consumer_key: (%s)', $yap_consumer));
+       throw new YahooOAuthApplicationException(sprintf('Provided consumer key does not match yap_consumer_key: (%s)', $yap_consumer_key));
     }
 
     $consumer    = new OAuthConsumer($consumer_key, $consumer_secret);
