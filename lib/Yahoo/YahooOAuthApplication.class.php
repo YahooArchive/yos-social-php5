@@ -160,7 +160,7 @@ class YahooOAuthApplication
 
   public static function fromYAP($consumer_key, $consumer_secret, $application_id)
   {
-    $is_canvas = isset($_POST['yap_appid']) && isset($_POST['yap_view']) && isset($_POST['yap_signature']);
+    $is_canvas = (isset($_POST['yap_appid']) && isset($_POST['yap_view']) && isset($_POST['oauth_signature']));
     if($is_canvas === false) {
        throw new YahooOAuthApplicationException('YAP application environment not found in request.');
     }
@@ -171,9 +171,10 @@ class YahooOAuthApplication
     }
 
     $consumer    = new OAuthConsumer($consumer_key, $consumer_secret);
-    $application = new YahooOAuthApplication($consumer->key, $consumer->secret, $application_id, null, new YahooOAuthAccessToken($_POST['yap_viewer_access_token'], $_POST['yap_viewer_access_token_secret'], null, null, null, $_POST['yap_viewer_guid']));
+    $token       = new YahooOAuthAccessToken($_POST['yap_viewer_access_token'], $_POST['yap_viewer_access_token_secret'], null, null, null, $_POST['yap_viewer_guid']);
+    $application = new YahooOAuthApplication($consumer->key, $consumer->secret, $application_id, null, $token);
 
-    $signature_valid = $application->signature_method_hmac_sha1->check_signature(OAuthRequest::from_request(), $consumer, null, $_POST['oauth_signature']);
+    $signature_valid = $application->signature_method_hmac_sha1->check_signature(OAuthRequest::from_request(), $consumer, $token, $_POST['oauth_signature']);
     if($signature_valid === false) {
        return false;
     }

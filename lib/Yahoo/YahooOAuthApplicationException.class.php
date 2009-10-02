@@ -36,7 +36,7 @@
  *   THE SOFTWARE.
  **/
 
-class YahooOAuthException extends OAuthException
+class YahooOAuthApplicationException extends OAuthException
 {
 
 }
