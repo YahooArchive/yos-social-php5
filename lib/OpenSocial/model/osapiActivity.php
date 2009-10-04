@@ -22,7 +22,7 @@
  * see
  * http://code.google.com/apis/opensocial/docs/0.8/reference/#opensocial.Activity
  */
-class osapiActivity {
+class osapiActivity extends osapiModel {
   public $appId;
   public $body;
   public $bodyId;

@@ -16,21 +16,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ */ 
 
 /**
- * Pre-defined provider class for Friend Connect (http://www.google.com/friendconnect)
- * @author Chris Chabot
+ * osapiGroup - model class for groups
+ * @author jedwards
+ *
  */
-class osapiFriendConnectProvider extends osapiProvider {
-
-  public function __construct(osapiHttpProvider $httpProvider = null) {
-    parent::__construct(null, null, null, "http://www.google.com/friendconnect/api", "http://www.google.com/friendconnect/api/rpc", "FriendConnect", true, $httpProvider);
-  }
-
-  public function preRequestProcess(&$request, &$method, &$url, &$headers, osapiAuth &$signer) {
-    if (method_exists($signer, 'setUseBodyHash')) {
-      $signer->setUseBodyHash(true);
-    }
-  }
+class osapiGroup extends osapiModel {
+  var $id;
+  var $title;
 }
+?>

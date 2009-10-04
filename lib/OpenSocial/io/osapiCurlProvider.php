@@ -1,5 +1,8 @@
 <?php
-/*
+/**
+ * @package OpenSocial
+ * @license Apache License
+ *
  * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -41,17 +44,18 @@ class osapiCurlProvider extends osapiHttpProvider {
       'body' => $postBody,
       'headers' => $headers
     );
-
+    
     osapiLogger::info("HTTP Request");
     osapiLogger::info($request);
 
     curl_setopt($ch, CURLOPT_URL, $url);
+    
     if ($postBody) {
       curl_setopt($ch, CURLOPT_POSTFIELDS, $postBody);
-      curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
-    } else {
-      curl_setopt($ch, CURLOPT_HTTPGET, 1);
     }
+    
+    // We need to set method even when we don't have a $postBody 'DELETE'
+    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($ch, CURLOPT_USERAGENT, $ua);
     curl_setopt($ch, CURLOPT_FOLLOWLOCATION, 1);

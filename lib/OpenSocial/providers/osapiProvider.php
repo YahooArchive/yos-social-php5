@@ -1,5 +1,8 @@
 <?php
-/*
+/**
+ * @package OpenSocial
+ * @license Apache License
+ *
  * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,7 +28,6 @@ require_once "osapiPartuzaProvider.php";
 require_once "osapiNetlogProvider.php";
 require_once "osapiHi5Provider.php";
 require_once "osapiXrdsProvider.php";
-require_once "osapiYahooProvider.php";
 
 /**
  * The osapiProvider class is used to define your OAuth and OpenSocial API endpoints

@@ -18,13 +18,12 @@
  * under the License.
  */
 
-class osapiStatusMoodModel extends osapiModel 
-{
-    var $moodId;
-    var $moodName;
-    var $moodPictureName;
-    var $moodPictureUrl;
-    var $moodStatusLastUpdated;
-    var $status;
-    var $userId;
+class osapiStatusMoodModel extends osapiModel {
+  public $moodId;
+  public $moodName;
+  public $moodPictureName;
+  public $moodPictureUrl;
+  public $moodStatusLastUpdated;
+  public $status;
+  public $userId;
 }

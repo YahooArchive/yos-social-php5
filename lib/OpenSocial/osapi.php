@@ -1,5 +1,8 @@
 <?php
-/*
+/**
+ * @package OpenSocial
+ * @license Apache License
+ *
  * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,7 +26,6 @@
  * both 2 legged and 3 legged OAuth.
  */
 
-require_once "OAuth/OAuth.php";
 require_once "external/XrdsSimpleParser.php";
 require_once "providers/osapiProvider.php";
 require_once "storage/osapiStorage.php";
@@ -62,7 +64,8 @@ class osapi {
     'mediaitems' => 'osapiMediaItems',
     'system' => 'osapiSystem',
     'statusmood'=>'osapiStatusMood',
-    'notifications'=>'osapiNotifications'
+    'notifications'=>'osapiNotifications',
+    'groups'=>'osapiGroups'
   );
 
   /**
@@ -88,7 +91,7 @@ class osapi {
       return $this->$service;
     }
   }
-  
+
   /**
    * If set to true, osapi will raise exceptions on anything
    * that isn't quite spec compliant. Mostly useful for testing

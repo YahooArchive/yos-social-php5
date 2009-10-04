@@ -1,5 +1,8 @@
 <?php
-/*
+/**
+ * @package OpenSocial
+ * @license Apache License
+ *
  * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -64,6 +67,14 @@ class osapiOAuth2Legged extends osapiAuth {
    */
   public function getUserId() {
     return $this->userId;
+  }
+
+  /**
+   * Sets the user ID on behalf of which this auth is making requests.
+   * @param String $userId A user ID.
+   */
+  public function setUserId($userId) {
+    $this->userId = $userId;
   }
 
   /**

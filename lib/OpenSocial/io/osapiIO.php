@@ -1,5 +1,8 @@
 <?php
-/*
+/**
+ * @package OpenSocial
+ * @license Apache License
+ *
  * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -34,7 +37,8 @@ protected static function convertArray(osapiRequest $request, $val, $strictMode)
     $service = $request->getService($request->method);
     $method = substr($request->method,stripos($request->method,'.')+1);
     
-    // don't converArray on responses that do not need to be placed into their respective models. (supportedFields, delete, create, update)
+    // don't converArray on responses that do not need to be placed into 
+    // their respective models. (supportedFields, delete, create, update)
     if($method == 'get'){
         switch ($service) {
           case 'people':
@@ -54,6 +58,15 @@ protected static function convertArray(osapiRequest $request, $val, $strictMode)
             break;
           case 'albums':
             $converted = osapiAlbums::convertArray($val, $strictMode);
+            break;
+          case 'statusmood':
+            $converted = osapiStatusMood::convertArray($val, $strictMode);
+            break;
+          case 'notifications':
+            $converted = osapiNotifications::convertArray($val, $strictMode);
+            break;
+          case 'groups':
+            $converted = osapiGroups::convertArray($val, $strictMode);
             break;
         }
     }

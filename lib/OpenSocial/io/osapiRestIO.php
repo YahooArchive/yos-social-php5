@@ -1,5 +1,8 @@
 <?php
-/*
+/**
+ * @package OpenSocial
+ * @license Apache License
+ *
  * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -23,41 +26,42 @@
  */
 class osapiRestIO extends osapiIO {
   
-	// URL templates used to construct the REST requests
-	private static $urlTemplates = array(
-	  'people' => 'people/{userId}/{groupId}/{personId}',
-	  'activities' => 'activities/{userId}/{groupId}/{appId}/{activityId}',
-	  'appdata' => 'appdata/{userId}/{groupId}/{appId}',
-	  'messages' => 'messages/{userId}/outbox/{msgId}', 
-	  'albums'=>'albums/{userId}/{groupId}/{albumId}',
-	  'mediaItems'=>'mediaItems/{userId}/{groupId}/{albumId}/{mediaItemId}',
-	  'groups'=>'groups/{userId}',
-	  // MySpace Specific
-	  'statusmood'=>'statusmood/{userId}/{groupId}',
-	  'notifications'=>'notifications/{userId}/{groupId}'
-	);
+  // URL templates used to construct the REST requests
+  private static $urlTemplates = array(
+    'people' => 'people/{userId}/{groupId}/{personId}',
+    'activities' => 'activities/{userId}/{groupId}/{appId}/{activityId}',
+    'appdata' => 'appdata/{userId}/{groupId}/{appId}',
+    'messages' => 'messages/{userId}/outbox/{msgId}', 
+    'albums'=>'albums/{userId}/{groupId}/{albumId}',
+    'mediaItems'=>'mediaItems/{userId}/{groupId}/{albumId}/{mediaItemId}',
+    'groups'=>'groups/{userId}',
+    // MySpace Specific
+    'statusmood'=>'statusmood/{userId}/{groupId}/{moodId}',
+    'notifications'=>'notifications/{userId}/{groupId}'
+  );
   
-	// Array used to resolve the method to the correct HTTP operation
-	private static $methodAliases = array(
-          'get' => 'GET',
-	  'create' => 'POST',
-	  'delete' => 'DELETE',
-	  'update' => 'PUT',
-	  'upload'=>'POST',
-	  'getSupportedFields'=>'GET'
-	);
-	
-	// Array used to define which field in the params array is supposed to be the post body
-	private static $postAliases = array(
-	  'people' => 'person',
-	  'activities' => 'activity', 
-	  'appdata' => 'data',
-	  'messages' => 'message', 
-	  'albums'=>'album',
-	  'mediaItems'=>'mediaItem',
-	  'statusmood'=>'statusMood',
-          'notifications'=>'notification'
-	);
+  // Array used to resolve the method to the correct HTTP operation
+  private static $methodAliases = array(
+    'get' => 'GET',
+    'create' => 'POST',
+    'delete' => 'DELETE',
+    'update' => 'PUT',
+    'upload'=>'POST',
+    'getSupportedFields'=>'GET',
+    'getSupportedMood'=>'GET'
+  );
+  
+  // Array used to define which field in the params array is supposed to be the post body
+  private static $postAliases = array(
+    'people' => 'person',
+    'activities' => 'activity', 
+    'appdata' => 'data',
+    'messages' => 'message', 
+    'albums'=>'album',
+    'mediaItems'=>'mediaItem',
+    'statusmood'=>'statusMood',
+    'notifications'=>'notification'
+  );
 
   /**
    * Sends the batched requests to the REST endpoint, the actual sending

@@ -18,23 +18,22 @@
  * under the License.
  */
 
-class osapiNotification extends osapiModel 
-{
-    var $templateId;
-    var $recipientIds;
-    var $templateParameters = array();
-    var $mediaItems = array();
+class osapiNotification extends osapiModel {
+  public $templateId;
+  public $recipientIds;
+  public $templateParameters = array();
+  public $mediaItems = array();
     
-    public function setTemplateParameter($key, $value) {
-        $this->templateParameters[] = array('key'=>$key, 'value'=>$value);
-    }
+  public function setTemplateParameter($key, $value) {
+    $this->templateParameters[] = array('key'=>$key, 'value'=>$value);
+  }
     
-    public function getTemplateParameter($key) {
-        foreach($this->templateParameters as $value){
-            if($key == $value['key']){
-                return $value['value'];
-            }
-        }
-        return null;
+  public function getTemplateParameter($key) {
+    foreach($this->templateParameters as $value) {
+      if($key == $value['key']){
+        return $value['value'];
+      }
     }
+    return null;
+  }
 }

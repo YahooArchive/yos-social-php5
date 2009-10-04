@@ -1,5 +1,8 @@
 <?php
-/*
+/**
+ * @package OpenSocial
+ * @license Apache License
+ *
  * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -29,6 +32,10 @@ class osapiStatusMood extends osapiService {
    */
   public function getSupportedFields() {
   	throw new osapiException("@supportedFields for statusmood is not supported");
+  }
+  
+  public function getSupportedMoods($params) {
+    return osapiRequest::createRequest('statusmood.getSupportedMood', $params);
   }
 
   /**

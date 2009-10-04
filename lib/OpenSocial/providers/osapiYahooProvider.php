@@ -1,5 +1,8 @@
 <?php
-/*
+/**
+ * @package OpenSocial
+ * @license Apache License
+ *
  * Copyright 2008 Google Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the 'License');
@@ -17,8 +20,6 @@
 
 /**
  * Pre-defined provider class for Yahoo! (http://developer.yahoo.com/opensocial)
- *
- * @author Dustin Whittle
  */
 class osapiYahooProvider extends osapiProvider {
   public function __construct(osapiHttpProvider $httpProvider = null) {

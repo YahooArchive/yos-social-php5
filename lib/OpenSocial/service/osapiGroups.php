@@ -16,68 +16,62 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
+ */ 
 
 /**
- * OpenSocial API class for Albums requests
+ * OpenSocial API class for Groups requests
+ * Only the get method is supported in the OpenSocial spec.
  *
  * @author Jesse Edwards
  */
-class osapiAlbums extends osapiService {
-	
+class osapiGroups extends osapiService {
   /**
    * Gets a list of fields supported by this service
    *
    * @return osapiRequest the request
    */
   public function getSupportedFields() {
-  	return osapiRequest::createRequest('albums.getSupportedFields', array('userId' => '@supportedFields'));
+  	 return osapiRequest::createRequest('groups.getSupportedFields', array('userId' => '@supportedFields'));
   }
   
   /**
-   * Gets albums
+   * Gets a users group.
    *
-   * @param array $params the parameters defining which albums to retrieve
+   * @param array $params the parameters defining which groups to fetch
    * @return osapiRequest the request
    */
   public function get($params) {
-    return osapiRequest::createRequest('albums.get', $params);
+    return osapiRequest::createRequest('groups.get', $params);
   }
-  
+
   /**
-   * Updates an album
+   * Update a group.
    *
-   * @param array $params the parameters defining the album data to update
+   * @param array $params the parameters defining which group data to update
    * @return osapiRequest the request
    */
   public function update($params){
-    if (!isset($params['album'])) throw new osapiException("Missing album in osapiAlbums->update()");
-    if (!$params['album'] instanceof osapiAlbum) throw new osapiException("The params['album'] should be a osapiAlbum in osapiAlbums->update()");
-    //TODO: check album.field restrictions
-    return osapiRequest::createRequest('albums.update', $params);
+    throw new osapiException("Updating groups is not supported");
   }
-  
+
   /**
-   * Deletes an album
+   * Deletes a group.
    *
-   * @param array $params the parameters defining the album to delete
+   * @param array $params the parameters defining which group to delete
    * @return osapiRequest the request
    */
   public function delete($params){
-  	throw new osapiException("Deleting albums is not supported");
+  	throw new osapiException("Deleting groups is not supported");
   }
-  
+
   /**
-   * Creates an album
+   * Create a group
    *
-   * @param array $params the parameters defining the album to create
+   * @param array $params the parameters defining which group 
    * @return osapiRequest the request
    */
   public function create($params){
-  	if (!isset($params['album'])) throw new osapiException("Missing album in osapiAlbums->create()");
-    if (!$params['album'] instanceof osapiAlbum) throw new osapiException("The params['album'] should be a osapiAlbum in osapiAlbums->create()");
-    //TODO: check album.field restrictions
-    return osapiRequest::createRequest('albums.create', $params);
+  	throw new osapiException("Creating groups is not supported");
   }
 
   /**
@@ -88,8 +82,8 @@ class osapiAlbums extends osapiService {
    * @return osapiPerson
    */
   static public function convertArray($array, $strictMode = true) {
- 	$instance = new osapiAlbum();
- 	$defaults = get_class_vars('osapiAlbum');
+ 	$instance = new osapiGroup();
+ 	$defaults = get_class_vars('osapiGroup');
  	
  	if ($strictMode && sizeof($defaults != sizeof($array))) {
       throw new osapiException("Unexpected fields in people response". print_r($array, true));
