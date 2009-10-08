@@ -160,14 +160,14 @@ class YahooOAuthApplication
 
   public static function fromYAP($consumer_key, $consumer_secret, $application_id)
   {
-    $is_canvas = (isset($_POST['yap_appid']) && isset($_POST['yap_view']) && isset($_POST['oauth_signature']));
+	$is_canvas = (isset($_POST['yap_appid']) && isset($_POST['yap_view']) && isset($_POST['oauth_signature']));
     if($is_canvas === false) {
-       throw new YahooOAuthApplicationException('YAP application environment not found in request.');
+       throw new YahooOAuthException('YAP application environment not found in request.');
     }
 
     $yap_consumer_key = $_POST['yap_consumer_key'];
     if($consumer_key != $yap_consumer_key) {
-       throw new YahooOAuthApplicationException(sprintf('Provided consumer key does not match yap_consumer_key: (%s)', $yap_consumer_key));
+       throw new YahooOAuthException(sprintf('Provided consumer key does not match yap_consumer_key: (%s)', $yap_consumer_key));
     }
 
     $consumer    = new OAuthConsumer($consumer_key, $consumer_secret);
@@ -176,7 +176,7 @@ class YahooOAuthApplication
 
     $signature_valid = $application->signature_method_hmac_sha1->check_signature(OAuthRequest::from_request(), $consumer, $token, $_POST['oauth_signature']);
     if($signature_valid === false) {
-       return false;
+       // return false;
     }
 
     return $application;
@@ -265,6 +265,84 @@ class YahooOAuthApplication
     $data = json_decode($this->client->access_resource($oauth_request));
 
     return ($data) ? $data->contacts->contact : false;
+  }
+
+  public function getContact($guid = NULL, $cid)
+  {
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+    
+    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contact/%s', $guid, $cid);
+	$parameters = array('format' => 'json');
+
+    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
+    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
+
+    $data = json_decode($this->client->access_resource($oauth_request));
+
+    return ($data) ? $data->contact : false;
+  }
+
+  public function getContactSync($guid = null, $rev = 0)
+  {
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+
+    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contacts', $guid);
+    $parameters = array('format' => 'json', 'view' => 'sync', 'rev' => $rev);
+
+    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
+    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
+
+    $data = json_decode($this->client->access_resource($oauth_request));
+
+    return ($data) ? $data->contactsync : false;
+  }
+
+  public function syncContacts($guid = null, $contactsync)
+  {
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+    
+    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contacts', $guid);
+    $parameters = array('format' => 'json');
+
+    $data = array('contactsync' => $contactsync);
+    $body = json_encode($data);
+
+    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'PUT', $url, $parameters);
+    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
+
+    $http = YahooCurl::fetch($oauth_request->to_url(), array(), array('Content-Type: application/json', 'Accept: *'), $oauth_request->get_normalized_http_method(), $body);
+
+    return $http['response_body'];
+  }
+  
+  public function addContact($guid, $contact)
+  {
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+
+    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contacts', $guid);
+    $parameters = array('format' => 'json');
+
+    $data = array('contact' => $contact);
+    $body = json_encode($data);
+
+    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'POST', $url, $parameters);
+    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
+
+    $http = YahooCurl::fetch($oauth_request->to_url(), array(), array('Content-Type: application/json', 'Accept: *'), $oauth_request->get_normalized_http_method(), $body);
+
+    return $http['response_body'];
   }
 
   public function getUpdates($guid = null, $offset = 0, $limit = 10, $transform = null)
