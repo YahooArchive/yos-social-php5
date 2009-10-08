@@ -1,5 +1,13 @@
 Yahoo! Social SDK - PHP5
-==========================
+========================
+
+**Warning**
+=======
+
+**_The yos-social-php5 SDK is released alpha and is experimental. The difference between the yos-social-php5 sdk and the yos-social-php sdk is that the storage is left for the user to implement.
+The new implementation is more flexible as developers can store the OAuth tokens in a php session, in a database, or in memcache. It does not require php sessions unless a partner wants it to.
+This means there is no method equivalent to 'hasSession' or 'requireSession'. An example of how this functionality could be implemented is in the yos-social-php5/examples/simpleauth/simpleauth.php._**
+
 
 Find documentation and support on Yahoo! Developer Network: http://developer.yahoo.com
 
