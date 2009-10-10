@@ -158,6 +158,17 @@ See the bundled sample code in examples/yql/delicious.php.
     See the bundled sample code in examples/opensocial/profile.php.
 
 
+## Adding a Contact:
+
+	# valid 'Yahoo! Contacts Read/Write' scopes are required to support this method. 
+
+    $contact_fields = array();
+    $contact_fields[] = array('type' => 'email', 'value' => 'me@domain.com');
+    $contact_fields[] = array('type' => 'name', 'value' => array('givenName'=> 'John', 'familyName' => 'Doe'));
+    $contact = array('fields' => $contact_fields);
+
+    var_dump($oauthapp->addContact($contact));
+
 Tests
 =====
 
