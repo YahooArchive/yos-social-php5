@@ -131,13 +131,13 @@ See the bundled sample code in examples/yql/delicious.php.
     $oauthapp      = new YahooOAuthApplication($CONSUMER_KEY, $CONSUMER_SECRET, $APPLICATION_ID, $CALLBACK_URL);
 
     # Fetch request token
-    $request_token = $oauthapp->getRequestToken();
+    $request_token = $oauthapp->getRequestToken($CALLBACK_URL);
 
     # Redirect user to authorization url
-    $redirect_url  = $oauthapp->getAuthorizationUrl($request_token, $CALLBACK_URL);
+    $redirect_url  = $oauthapp->getAuthorizationUrl($request_token);
 
     # Exchange request token for authorized access token
-    $access_token  = $oauthapp->getAccessToken($request_token);
+    $access_token  = $oauthapp->getAccessToken($request_token, $_REQUEST['oauth_verifier']);
 
     # update access token
     $oauthapp->token = $access_token;
