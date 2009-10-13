@@ -318,7 +318,7 @@ class YahooOAuthApplication
     return $http['response_body'];
   }
 
-  public function addContact($guid, $contact)
+  public function addContact($guid = null, $contact)
   {
     if($guid == null && !is_null($this->token))
     {
@@ -390,9 +390,15 @@ class YahooOAuthApplication
     return $http['response_body'];
   }
 
-  public function getSocialGraph($offset = 0, $limit = 10)
+  public function getSocialGraph($guid = null, $offset = 0, $limit = 10)
   {
-    $data = $this->yql('select * from social.profile ('.$offset.', '.$limit.') where guid in (select guid from social.connections ('.$offset.', '.$limit.') where owner_guid=me)');
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+    
+    $query = sprintf("select * from social.profile where guid in (select guid from social.connections (%s, %s) where owner_guid='%s')", $offset, $limit, $guid);
+    $data = $this->yql($query);
 
     return isset($data->query->results) ? $data->query->results : false;
   }
