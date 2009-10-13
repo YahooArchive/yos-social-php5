@@ -62,7 +62,7 @@ class YahooOAuthApplication
     $this->signature_method_hmac_sha1 = new OAuthSignatureMethod_HMAC_SHA1();
   }
 
-  public function getOpenIDUrl($return_to = false, $lang = 'en')
+  public function getOpenIDUrl($return_to = false, $lang = 'en', $openIdEndpoint = 'https://open.login.yahooapis.com/openid/op/auth')
   {
     $openid_request = array(
       'openid.ns'                => 'http://specs.openid.net/auth/2.0',
@@ -90,13 +90,7 @@ class YahooOAuthApplication
       'xopenid_lang_pref'        => $lang,
    );
 
-    return 'https://open.login.yahooapis.com/openid/op/auth?'.http_build_query($openid_request);
-  }
-
-
-  public function validateOpenID()
-  {
-
+    return $openIdEndpoint.'?'.http_build_query($openid_request);
   }
 
   public function getRequestToken($callback = "oob")
@@ -273,7 +267,7 @@ class YahooOAuthApplication
     {
       $guid = $this->token->yahoo_guid;
     }
-    
+
     $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contact/%s', $guid, $cid);
 	$parameters = array('format' => 'json');
 
@@ -309,7 +303,7 @@ class YahooOAuthApplication
     {
       $guid = $this->token->yahoo_guid;
     }
-    
+
     $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contacts', $guid);
     $parameters = array('format' => 'json');
 
@@ -323,7 +317,7 @@ class YahooOAuthApplication
 
     return $http['response_body'];
   }
-  
+
   public function addContact($guid, $contact)
   {
     if($guid == null && !is_null($this->token))
