@@ -422,7 +422,7 @@ class YahooOAuthApplication
     return isset($data->query->results) ? $data->query->results : false;
   }
 
-  public function yql($query, $parameters = array())
+  public function yql($query, $parameters = array(), $method='GET')
   {
     if(is_array($query))
     {
@@ -432,7 +432,7 @@ class YahooOAuthApplication
 
     $parameters = array_merge(array('q' => $query, 'format' => 'json', 'env' => YahooYQLQuery::DATATABLES_URL), $parameters);
 
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', YahooYQLQuery::OAUTH_API_URL, $parameters);
+    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, $method, YahooYQLQuery::OAUTH_API_URL, $parameters);
     $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
 
     return json_decode($this->client->access_resource($oauth_request));
