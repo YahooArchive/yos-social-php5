@@ -422,7 +422,7 @@ class YahooOAuthApplication
     return isset($data->query->results) ? $data->query->results : false;
   }
 
-  public function yql($query, $parameters = array(), $method='GET')
+  public function yql($query, $parameters = array(), $method = YahooCurl::GET)
   {
     if(is_array($query))
     {
