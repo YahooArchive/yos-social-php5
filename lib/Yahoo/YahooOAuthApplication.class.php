@@ -14,6 +14,7 @@
  * @subpackage yahoo
  *
  * @author     Dustin Whittle <dustin@yahoo-inc.com>
+ * @author     Zach Graves <zachg@yahoo-inc.com>
  * @copyright  Copyrights for code authored by Yahoo! Inc. is licensed under the following terms:
  * @license    BSD Open Source License
  *
@@ -154,7 +155,7 @@ class YahooOAuthApplication
 
   public static function fromYAP($consumer_key, $consumer_secret, $application_id)
   {
-	$is_canvas = (isset($_POST['yap_appid']) && isset($_POST['yap_view']) && isset($_POST['oauth_signature']));
+    $is_canvas = (isset($_POST['yap_appid']) && isset($_POST['yap_view']) && isset($_POST['oauth_signature']));
     if($is_canvas === false) {
        throw new YahooOAuthException('YAP application environment not found in request.');
     }
@@ -170,10 +171,17 @@ class YahooOAuthApplication
 
     $signature_valid = $application->signature_method_hmac_sha1->check_signature(OAuthRequest::from_request(), $consumer, $token, $_POST['oauth_signature']);
     if($signature_valid === false) {
+       // temporary fix to allow newer versions of OAuth.php to work with YAP.
        // return false;
     }
 
     return $application;
+  }
+
+  public function getIdentity($yid)
+  {
+    $rsp = $this->yql(sprintf('SELECT * FROM yahoo.identity where yid="%s"', $yid));
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function getProfile($guid = null)
@@ -182,14 +190,28 @@ class YahooOAuthApplication
     {
       $guid = $this->token->yahoo_guid;
     }
-    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/profile', $guid);
-    $parameters = array('format' => 'json');
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
+    
+    $rsp = $this->yql(sprintf('SELECT * FROM social.profile where guid="%s"', $guid));
 
-    $data = json_decode($this->client->access_resource($oauth_request));
+    return isset($rsp->query->results) ? $rsp->query->results : false;
+  }
 
-    return ($data) ? $data->profile : false;
+  public function getProfileImages($guid = null, $size = null) 
+  {
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+    
+    if($size) {
+	  $query = sprintf('SELECT * FROM social.profile.image WHERE guid="%s" and size="%s"', $guid, $size);
+    } else {
+	  $query = sprintf('SELECT * FROM social.profile.image WHERE guid="%s"', $guid);
+    }
+
+    $rsp = $this->yql($query);
+
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function getStatus($guid = null)
@@ -198,13 +220,10 @@ class YahooOAuthApplication
     {
       $guid = $this->token->yahoo_guid;
     }
-
-    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/profile/status', $guid);
-    $parameters = array('format' => 'json');
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
-
-    return json_decode($this->client->access_resource($oauth_request));
+    
+    $rsp = $this->yql(sprintf('UPDATE social.profile.status SET status="%s" WHERE guid="%s"', $status, $guid));
+	
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function setStatus($guid = null, $status)
@@ -213,18 +232,10 @@ class YahooOAuthApplication
     {
       $guid = $this->token->yahoo_guid;
     }
-
-    $body = '{"status":{"message":"'.$status.'"}}';
-
-    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/profile/status', $guid);
-    $parameters = array('format' => 'json');
-
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'PUT', $url, $parameters);
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
-
-    $http = YahooCurl::fetch($oauth_request->to_url(), array(), array('Content-Type: application/x-www-form-urlencoded', 'Accept: *'), $oauth_request->get_normalized_http_method(), $body);
-
-    return $http['response_body'];
+    
+    $rsp = $this->yql(sprintf('UPDATE social.profile.status SET status="%s" WHERE guid="%s"', $status, $guid), array(), YahooCurl::PUT);
+    
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function getConnections($guid = null, $offset = 0, $limit = 10)
@@ -233,15 +244,10 @@ class YahooOAuthApplication
     {
       $guid = $this->token->yahoo_guid;
     }
-
-    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/connections', $guid);
-    $parameters = array('format' => 'json', 'view' => 'usercard', 'start' => $offset, 'count' => $limit);
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
-
-    $data = json_decode($this->client->access_resource($oauth_request));
-
-    return ($data) ? $data->connections->connection : false;
+    
+    $rsp = $this->yql(sprintf('SELECT * FROM social.connections WHERE owner_guid="%s"', $guid));
+    
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function getContacts($guid = null, $offset = 0, $limit = 10)
@@ -250,15 +256,10 @@ class YahooOAuthApplication
     {
       $guid = $this->token->yahoo_guid;
     }
-
-    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contacts', $guid);
-    $parameters = array('format' => 'json', 'view' => 'tinyusercard', 'start' => $offset, 'count' => $limit);
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
-
-    $data = json_decode($this->client->access_resource($oauth_request));
-
-    return ($data) ? $data->contacts->contact : false;
+    
+    $rsp = $this->yql(sprintf('SELECT * FROM social.contacts WHERE guid="%s"', $guid));
+    
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function getContact($guid = NULL, $cid)
@@ -269,7 +270,7 @@ class YahooOAuthApplication
     }
 
     $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contact/%s', $guid, $cid);
-	$parameters = array('format' => 'json');
+    $parameters = array('format' => 'json');
 
     $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
     $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
@@ -339,55 +340,52 @@ class YahooOAuthApplication
     return $http['response_body'];
   }
 
-  public function getUpdates($guid = null, $offset = 0, $limit = 10, $transform = null)
+  public function getConnectionUpdates($guid = null, $offset = 0, $limit = 10)
   {
     if($guid == null && !is_null($this->token))
     {
       $guid = $this->token->yahoo_guid;
     }
 
-    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/updates', $guid);
-    $parameters = array('format' => 'json', 'start' => $offset, 'count' => $limit, 'transform' => ($transform) ? $transform : '( sort "pubDate" numeric descending (all) )');
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
+    $rsp = $this->yql(sprintf('SELECT * FROM social.connections.updates(%s, %s) WHERE guid="%s"', $offset, $limit, $guid));
 
-    $data = json_decode($this->client->access_resource($oauth_request));
-
-    return ($data) ? $data->updates : false;
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
-  public function insertUpdate($guid = null, $description, $title, $link)
+  public function getUpdates($guid = null, $offset = 0, $limit = 10)
   {
     if($guid == null && !is_null($this->token))
     {
       $guid = $this->token->yahoo_guid;
     }
+    
+    $rsp = $this->yql(sprintf('SELECT * FROM social.updates(%s, %s) WHERE guid="%s"', $offset, $limit, $guid));
+    
+    return isset($rsp->query->results) ? $rsp->query->results : false;
+  }
 
+  public function insertUpdate($guid = null, $description, $title, $link, &$suid = null)
+  {
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+    
+    if($suid == null) 
+    {
+      // $suid = 'ugc'.rand(0, 1000);
+      $suid = sha1(uniqid(mt_rand()));
+    }
+	
     $source = 'APP.'.$this->application_id;
-    $suid = 'ugc'.rand(0, 1000);
-    $body = sprintf('
-    { "updates": [ {
-                "class": "app",
-                "collectionType": "guid",
-                "description": "%s",
-                "suid": "%s",
-                "link": "%s",
-                "source": "%s",
-                "pubDate": "%s",
-                "title": "%s",
-                "type": "appActivity",
-                "collectionID": "%s"
-            } ] }', $description, $suid, $link, $source, time(), $title, $guid);
-
-    $url = sprintf('%s/user/%s/updates/%s/%s', YahooOAuthClient::SOCIAL_API_URL, $guid, $source, $suid);
-    $parameters = array('format' => 'json');
-
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'PUT', $url, $parameters);
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
-
-    $http = YahooCurl::fetch($oauth_request->to_url(), array(), array('Content-Type: application/x-www-form-urlencoded', 'Accept: *'), $oauth_request->get_normalized_http_method(), $body);
-
-    return $http['response_body'];
+    $pubDate = time();
+    
+    $query = 'INSERT INTO social.updates (guid, title, description, link, pubDate, source, suid) VALUES ("%s", "%s", "%s", "%s", "%s", "%s", "%s");';
+    $query = sprintf($query, $guid, $title, $description, $link, $pubDate, $source, $suid);
+    
+    $rsp = $this->yql($query, array(), YahooCurl::PUT);
+    
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function getSocialGraph($guid = null, $offset = 0, $limit = 10)
@@ -397,10 +395,10 @@ class YahooOAuthApplication
       $guid = $this->token->yahoo_guid;
     }
     
-    $query = sprintf("select * from social.profile where guid in (select guid from social.connections (%s, %s) where owner_guid='%s')", $offset, $limit, $guid);
-    $data = $this->yql($query);
+    $query = sprintf('SELECT * FROM social.profile where guid in (SELECT guid from social.connections (%s, %s) WHERE owner_guid="%s");', $offset, $limit, $guid);
+    $rsp = $this->yql($query);
 
-    return isset($data->query->results) ? $data->query->results : false;
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function getProfileLocation($guid = null)
@@ -409,17 +407,29 @@ class YahooOAuthApplication
     {
       $guid = $this->token->yahoo_guid;
     }
+    
+    $rsp = $this->yql(sprintf('SELECT * FROM geo.places WHERE text IN (SELECT location FROM social.profile WHERE guid="%s");', $guid));
 
-    $data = $this->yql(sprintf('select * from geo.places where text in (select location from social.profile where guid="%s")', $guid));
-
-    return isset($data->query->results) ? $data->query->results : false;
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function getGeoPlaces($location)
   {
-    $data = $this->yql(sprintf('select * from geo.places where text="%s"', $location));
-
-    return isset($data->query->results) ? $data->query->results : false;
+    $rsp = $this->yql(sprintf('SELECT * FROM geo.places where text="%s"', $location));
+    return isset($rsp->query->results) ? $rsp->query->results : false;
+  }
+  
+  public function setSmallView($guid = null, $content) 
+  {
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+    
+    $rsp = $this->yql(sprintf('UPDATE yap.setsmallview SET content="%s" where guid="%s" and ck="%s" and cks="%s";', 
+		$content, $guid, $this->consumer->key, $this->consumer->secret), array(), YahooCurl::PUT);
+    
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function yql($query, $parameters = array(), $method = YahooCurl::GET)
@@ -427,7 +437,7 @@ class YahooOAuthApplication
     if(is_array($query))
     {
       // handle multi queries
-      $query = sprintf('select * from query.multi where queries="%s"', implode(';', str_replace('"', "'", $query)));
+      $query = sprintf('SELECT * FROM query.multi WHERE queries="%s"', implode(';', str_replace('"', "'", $query)));
     }
 
     $parameters = array_merge(array('q' => $query, 'format' => 'json', 'env' => YahooYQLQuery::DATATABLES_URL), $parameters);
