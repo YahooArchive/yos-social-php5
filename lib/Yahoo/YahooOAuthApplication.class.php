@@ -157,12 +157,12 @@ class YahooOAuthApplication
   {
     $is_canvas = (isset($_POST['yap_appid']) && isset($_POST['yap_view']) && isset($_POST['oauth_signature']));
     if($is_canvas === false) {
-       throw new YahooOAuthException('YAP application environment not found in request.');
+       throw new YahooOAuthApplicationException('YAP application environment not found in request.');
     }
 
     $yap_consumer_key = $_POST['yap_consumer_key'];
     if($consumer_key != $yap_consumer_key) {
-       throw new YahooOAuthException(sprintf('Provided consumer key does not match yap_consumer_key: (%s)', $yap_consumer_key));
+       throw new YahooOAuthApplicationException(sprintf('Provided consumer key does not match yap_consumer_key: (%s)', $yap_consumer_key));
     }
 
     $consumer    = new OAuthConsumer($consumer_key, $consumer_secret);
