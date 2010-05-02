@@ -146,7 +146,7 @@ class YahooOAuthApplication
   public function refreshAccessToken($oauth_access_token)
   {
     $parameters = array('oauth_session_handle' => $oauth_access_token->session_handle);
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $oauth_access_token, 'GET', YahooOAuthClient::REQUEST_TOKEN_API_URL, $parameters);
+    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $oauth_access_token, 'GET', YahooOAuthClient::ACCESS_TOKEN_API_URL, $parameters);
     $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $oauth_access_token);
     $this->token = $this->client->fetch_access_token($oauth_request);
 
