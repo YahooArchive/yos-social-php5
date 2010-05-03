@@ -221,7 +221,7 @@ class YahooOAuthApplication
       $guid = $this->token->yahoo_guid;
     }
     
-    $rsp = $this->yql(sprintf('UPDATE social.profile.status SET status="%s" WHERE guid="%s"', $status, $guid));
+    $rsp = $this->yql(sprintf('SELECT * FROM social.profile.status WHERE guid="%s"', $guid));
 	
     return isset($rsp->query->results) ? $rsp->query->results : false;
   }
