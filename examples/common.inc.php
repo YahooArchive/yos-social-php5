@@ -96,21 +96,6 @@ require_once "Auth/OpenID/SReg.php";
  */
 require_once "Auth/OpenID/PAPE.php";
 
-/**
- * Require OAuth extension.
- */
-require_once "Auth/OpenID/OAuth.php";
-
-
-/**
- * OpenSocial - http://code.google.com/p/opensocial-php-client
- */
-
-/**
- * Require Open Social PHP5 libraries
- */
-require_once 'OpenSocial/osapi.php';
-
 
 /**
  * Yahoo! PHP5 SDK - http://github.com/yahoo/yos-social-php5/tree/master

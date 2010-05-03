@@ -148,7 +148,7 @@ else
 <?php else: ?>
 
 <?php if(isset($_SESSION['yahoo_oauth_request_token'])): ?>
-<div id="ysimpleauth-logout" class="authbar"><a href="simepleauth.php?openid_mode=cancel">Logout</a></div>
+<div id="ysimpleauth-logout" class="authbar"><a href="simpleauth.php?openid_mode=cancel">Logout</a></div>
 <?php endif; ?>
 
 <?php
