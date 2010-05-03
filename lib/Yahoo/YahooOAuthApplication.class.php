@@ -62,6 +62,13 @@ class YahooOAuthApplication
     $this->signature_method_plaintext = new OAuthSignatureMethod_PLAINTEXT();
     $this->signature_method_hmac_sha1 = new OAuthSignatureMethod_HMAC_SHA1();
   }
+  
+  public function getGUID()
+  {
+     if($this->token) {
+        return $this->token->yahoo_guid;  
+     }
+  }
 
   public function getOpenIDUrl($return_to = false, $lang = 'en', $openIdEndpoint = 'https://open.login.yahooapis.com/openid/op/auth')
   {
@@ -195,7 +202,7 @@ class YahooOAuthApplication
 
     return isset($rsp->query->results) ? $rsp->query->results : false;
   }
-
+  
   public function getProfileImages($guid = null, $size = null) 
   {
     if($guid == null && !is_null($this->token))
@@ -245,7 +252,7 @@ class YahooOAuthApplication
       $guid = $this->token->yahoo_guid;
     }
     
-    $rsp = $this->yql(sprintf('SELECT * FROM social.connections WHERE owner_guid="%s"', $guid));
+    $rsp = $this->yql(sprintf('SELECT * FROM social.connections(%s,%s) WHERE owner_guid="%s"', $offset, $limit, $guid));
     
     return isset($rsp->query->results) ? $rsp->query->results : false;
   }
@@ -257,7 +264,7 @@ class YahooOAuthApplication
       $guid = $this->token->yahoo_guid;
     }
     
-    $rsp = $this->yql(sprintf('SELECT * FROM social.contacts WHERE guid="%s"', $guid));
+    $rsp = $this->yql(sprintf('SELECT * FROM social.contacts(%s,%s) WHERE guid="%s"', $offset, $limit, $guid));
     
     return isset($rsp->query->results) ? $rsp->query->results : false;
   }
@@ -269,15 +276,9 @@ class YahooOAuthApplication
       $guid = $this->token->yahoo_guid;
     }
 
-    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contact/%s', $guid, $cid);
-    $parameters = array('format' => 'json');
-
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
-
-    $data = json_decode($this->client->access_resource($oauth_request));
-
-    return ($data) ? $data->contact : false;
+    $rsp = $this->yql(sprintf('SELECT * from social.contacts WHERE guid="%s" AND contact_id="%s";', $guid, $cid));
+    
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function getContactSync($guid = null, $rev = 0)
@@ -286,16 +287,10 @@ class YahooOAuthApplication
     {
       $guid = $this->token->yahoo_guid;
     }
-
-    $url = sprintf(YahooOAuthClient::SOCIAL_API_URL.'/user/%s/contacts', $guid);
-    $parameters = array('format' => 'json', 'view' => 'sync', 'rev' => $rev);
-
-    $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, 'GET', $url, $parameters);
-    $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
-
-    $data = json_decode($this->client->access_resource($oauth_request));
-
-    return ($data) ? $data->contactsync : false;
+    
+    $rsp = $this->yql(sprintf('SELECT * from social.contacts.sync WHERE guid="%s" AND rev="%s";', $guid, $rev));
+    
+    return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function syncContacts($guid = null, $contactsync)
@@ -317,6 +312,19 @@ class YahooOAuthApplication
     $http = YahooCurl::fetch($oauth_request->to_url(), array(), array('Content-Type: application/json', 'Accept: *'), $oauth_request->get_normalized_http_method(), $body);
 
     return $http['response_body'];
+  }
+  
+  public function addSimpleContact($guid = null, $givenName, $familyName, $email, $nickname) 
+  {
+     if($guid == null && !is_null($this->token))
+     {
+       $guid = $this->token->yahoo_guid;
+     }
+     
+     $query = sprintf('INSERT INTO social.contacts (owner_guid, givenName, familyName, email, nickname) VALUES ("%s", "%s", "%s", "%s", "%s")', $guid, $givenName, $familyName, $email, $nickname);
+     $rsp = $this->yql($query, array(), YahooCurl::PUT);
+
+     return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
   public function addContact($guid = null, $contact)
