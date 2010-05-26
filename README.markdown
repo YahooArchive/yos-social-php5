@@ -147,6 +147,15 @@ See the bundled sample code in examples/yql/delicious.php.
 
     var_dump($profile);
 
+## Inserting Updates
+    
+    $oauthapp      = new YahooOAuthApplication($CONSUMER_KEY, $CONSUMER_SECRET, $APPLICATION_ID, $CALLBACK_URL);
+    
+    $title = "cloned the yos-social-php5 SDK on Github";
+    $description = "PHP 5 SDK for YQL";
+    $link = "http://github.com/yahoo/yos-social-php5";
+    
+    $oauthapp->insertUpdate(null, $description, $title, $link, $suid);
 
 ## Signing with SimpleAuth (OpenID + OAuth):
 
