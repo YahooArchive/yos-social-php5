@@ -152,7 +152,13 @@ See the bundled sample code in examples/yql/delicious.php.
     $description = "A PHP 5 SDK for YQL";
     $link = "http://github.com/yahoo/yos-social-php5";
     
-    $oauthapp->insertUpdate(null, $description, $title, $link, $suid);
+    $image = array(
+       'url' => 'http://github.com/images/modules/header/logov3.png', 
+       'width' => 100,
+       'height' => 45, 
+    );
+    
+    $oauthapp->insertUpdate(null, $description, $title, $link, $image, $suid);
 
 ## Signing with SimpleAuth (OpenID + OAuth):
 
