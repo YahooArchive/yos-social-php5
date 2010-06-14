@@ -372,40 +372,25 @@ class YahooOAuthApplication
     return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
-  public function insertUpdate($guid = null, $description, $title, $link, $image = null, &$suid = null)
+  public function insertUpdate($guid = null, $params)
   {
     if($guid == null && !is_null($this->token))
     {
       $guid = $this->token->yahoo_guid;
     }
     
-    if($suid == null) 
-    {
-      // $suid = 'ugc'.rand(0, 1000);
-      $suid = uniqid(mt_rand());
-    }
-	
-    $source = 'APP.'.$this->application_id;
-    $pubDate = time();
-    
-    $update = array(
-       'guid' => $guid, 
-       'title' => $title, 
-       'description' => $description, 
-       'link' => $link, 
-       'pubDate' => $pubDate, 
-       'source' => $source, 
-       'suid' => $suid
+    $defaults = array(
+       'guid' => $guid,
+       'suid' => uniqid(mt_rand()),
+       'pubDate' => time(),
+       'source' => 'APP.'.$this->application_id,
+       'type' => 'appActivity',
+       'link' => ''
     );
     
-    if($image) {
-       $update['imageURL'] = $image['url'];
-       $update['imageWidth'] = $image['width'];
-       $update['imageHeight'] = $image['height'];
-    }
-    
-    $keys = implode(",", array_keys($update));
-    $values = implode(",", array_map('_yql_insert_quotes', array_values($update)));
+    $update = array_merge($defaults, $params);
+    $keys = implode(',', array_keys($update));
+    $values = implode(',', array_map('_yql_insert_quotes', array_values($update)));
 
     $query = 'INSERT INTO social.updates (%s) VALUES (%s);';
     $query = sprintf($query, $keys, $values);
