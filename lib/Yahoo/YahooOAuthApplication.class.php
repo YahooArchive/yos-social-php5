@@ -256,6 +256,18 @@ class YahooOAuthApplication
     
     return isset($rsp->query->results) ? $rsp->query->results : false;
   }
+  
+  public function getRelationships($guid = null, $offset = 0, $limit = 10)
+  {
+    if($guid == null && !is_null($this->token))
+    {
+      $guid = $this->token->yahoo_guid;
+    }
+    
+    $rsp = $this->yql(sprintf('SELECT * FROM social.relationships(%s,%s) WHERE owner_guid="%s"', $offset, $limit, $guid));
+    
+    return isset($rsp->query->results) ? $rsp->query->results : false;
+  }
 
   public function getContacts($guid = null, $offset = 0, $limit = 10)
   {
@@ -407,7 +419,7 @@ class YahooOAuthApplication
       $guid = $this->token->yahoo_guid;
     }
     
-    $query = sprintf('SELECT * FROM social.profile where guid in (SELECT guid from social.connections (%s, %s) WHERE owner_guid="%s");', $offset, $limit, $guid);
+    $query = sprintf('SELECT * FROM social.profile where guid in (SELECT guid from social.relationships (%s, %s) WHERE owner_guid="%s");', $offset, $limit, $guid);
     $rsp = $this->yql($query);
 
     return isset($rsp->query->results) ? $rsp->query->results : false;
