@@ -395,7 +395,7 @@ class YahooOAuthApplication
         'suid' => uniqid(mt_rand()),
         'pubDate' => (string)time(),
         'source' => 'APP.'.$this->application_id,
-        'type' => 'appActivity',
+        'type' => 'appActivity3',
         'link' => ''
      );
      
