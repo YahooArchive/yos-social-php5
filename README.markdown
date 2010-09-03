@@ -149,9 +149,9 @@ See the bundled sample code in examples/yql/delicious.php.
 
 ## Inserting Updates
 
-    $oauthapp->insertUpdate(null, array(
+    $oauthapp->insertUpdate(array(
        'title' => "cloned the yos-social-php5 SDK on Github",
-       'description => "A PHP5 SDK for YQL",
+       'description' => "A PHP5 SDK for YQL",
        'link' => "http://github.com/yahoo/yos-social-php5",
        'imgURL' => 'http://github.com/images/modules/header/logov3.png', 
        'imgWidth' => '100',
