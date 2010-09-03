@@ -384,32 +384,35 @@ class YahooOAuthApplication
     return isset($rsp->query->results) ? $rsp->query->results : false;
   }
 
-  public function insertUpdate($guid = null, $params)
+  public function insertUpdate($params)
   {
-    if($guid == null && !is_null($this->token))
-    {
-      $guid = $this->token->yahoo_guid;
-    }
-    
-    $defaults = array(
-       'guid' => $guid,
-       'suid' => uniqid(mt_rand()),
-       'pubDate' => time(),
-       'source' => 'APP.'.$this->application_id,
-       'type' => 'appActivity',
-       'link' => ''
-    );
-    
-    $update = array_merge($defaults, $params);
-    $keys = implode(',', array_keys($update));
-    $values = implode(',', array_map('_yql_insert_quotes', array_values($update)));
-
-    $query = 'INSERT INTO social.updates (%s) VALUES (%s);';
-    $query = sprintf($query, $keys, $values);
-    
-    $rsp = $this->yql($query, array(), YahooCurl::PUT);
-    
-    return isset($rsp->query->results) ? $rsp->query->results : false;
+     $guid = $this->token->yahoo_guid;
+     
+     $defaults = array(
+        'collectionID' => $guid,
+        'collectionType' => 'guid',
+        'class' => 'app',
+        'suid' => uniqid(mt_rand()),
+        'pubDate' => (string)time(),
+        'source' => 'APP.'.$this->application_id,
+        'type' => 'appActivity',
+        'link' => ''
+     );
+     
+     $update = array_merge($defaults, $params);
+     $body = array('updates' => array($update));
+     
+     $url = sprintf("http://social.yahooapis.com/v1/user/%s/updates/%s/%s", $update['collectionID'], $update['source'], $update['suid']);
+     
+     $oauth_request = OAuthRequest::from_consumer_and_token($this->consumer, $this->token, YahooCurl::PUT, $url);
+     $oauth_request->sign_request($this->signature_method_hmac_sha1, $this->consumer, $this->token);
+     
+     $parameters = json_encode($body);
+     $headers = array('Content-Type: application/json', 'Accept: application/json', $oauth_request->to_header());
+     
+     $http = YahooCurl::fetch($oauth_request->get_normalized_http_url(), array(), $headers, $oauth_request->get_normalized_http_method(), $parameters);
+     
+     return ($http) ? json_decode($http['response_body']) : false;
   }
 
   public function getSocialGraph($guid = null, $offset = 0, $limit = 10)

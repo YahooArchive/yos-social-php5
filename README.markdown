@@ -148,17 +148,15 @@ See the bundled sample code in examples/yql/delicious.php.
     var_dump($profile);
 
 ## Inserting Updates
-    $title = "cloned the yos-social-php5 SDK on Github";
-    $description = "A PHP 5 SDK for YQL";
-    $link = "http://github.com/yahoo/yos-social-php5";
-    
-    $image = array(
-       'url' => 'http://github.com/images/modules/header/logov3.png', 
-       'width' => 100,
-       'height' => 45, 
-    );
-    
-    $oauthapp->insertUpdate(null, $description, $title, $link, $image, $suid);
+
+    $oauthapp->insertUpdate(null, array(
+       'title' => "cloned the yos-social-php5 SDK on Github",
+       'description => "A PHP5 SDK for YQL",
+       'link' => "http://github.com/yahoo/yos-social-php5",
+       'imgURL' => 'http://github.com/images/modules/header/logov3.png', 
+       'imgWidth' => '100',
+       'imgHeight' => '45'
+    ));
 
 ## Signing with SimpleAuth (OpenID + OAuth):
 
