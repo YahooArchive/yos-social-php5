@@ -1,0 +1,15 @@
+{
+    "name": "yahoo/yos-social-php5",
+    "description": "Yahoo! Social SDK - PHP5",
+    "keywords": ["yahoo", "social", "sdk", "php"],
+    "type": "library",
+    "license": "BSD",
+    "homepage" : "http://developer.yahoo.com/social/sdk/php/",
+    "support": {
+        "forum": "http://developer.yahoo.com/forum/Y-OS-SDKs/"
+    },
+    "require": {
+        "ext-curl":  "*",
+        "ext-openssl":  "*"
+    }
+}
