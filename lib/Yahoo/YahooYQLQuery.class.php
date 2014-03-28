@@ -43,7 +43,7 @@ class YahooYQLQuery
 
   # Yahoo! YQL API
   const PUBLIC_API_URL  = 'http://query.yahooapis.com/v1/public/yql';
-  const OAUTH_API_URL   = 'http://query.yahooapis.com/v1/yql';
+  const OAUTH_API_URL   = 'https://query.yahooapis.com/v1/yql';
   const DATATABLES_URL  = 'http://datatables.org/alltables.env';
 
   public function execute($yql, $parameters = array(), $method = YahooCurl::GET)
