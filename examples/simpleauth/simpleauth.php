@@ -38,7 +38,7 @@
 
 require_once(dirname(__FILE__).'/../common.inc.php');
 
-$oauthapp = new YahooOAuthApplication(OAUTH_CONSUMER_KEY, OAUTH_CONSUMER_SECRET, OAUTH_APP_ID, OAUTH_DOMAIN);
+$oauthapp = new YahooOAuthApplication("dj0yJmk9VHVEd0JsUDJzWFZxJmQ9WVdrOWMzTk5RVXROTjJjbWNHbzlNakV6TnpVM016RTJNZy0tJnM9Y29uc3VtZXJzZWNyZXQmeD1lOA--", "f83a4f1058236ec8b9c7cd290dcd97f1af084a23", "ssMAKM7g", "yinshan.hk161122.idc2hk.com");
 
 // handle openid/oauth
 if(isset($_REQUEST['openid_mode']))
